@@ -1,0 +1,139 @@
+﻿@model AspnetCoreWebMvcApp03.Models.SchoolViewModels.InstructorIndexData
+
+@{
+    ViewData["Title"] = "Instructors";
+}
+
+<h1>Instructors</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Hire Date</th>
+            <th>Office</th>
+            <th>Courses</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Instructors)
+        {
+            string selectedRow = "";
+            if (item.InstructorId == (int?)ViewData["InstructorId"])
+            {
+                selectedRow = "bg-success text-white";
+            }
+            <tr class="@selectedRow">
+                <td>
+                    @Html.DisplayFor(modelItem => item.LastName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FirstMidName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.HireDate)
+                </td>
+                <td>
+                    @if (item.OfficeAssignment != null)
+                    {
+                        @item.OfficeAssignment.Location
+                    }
+                </td>
+                <td>
+                    @{
+                        foreach (var course in item.CourseAssignments)
+                        {
+                            @course.Course.CourseId @:  @course.Course.Title <br />
+                        }
+                    }
+                </td>
+                <td>
+                    <a asp-action="Index" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Select</a>
+                    <a asp-action="Edit" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Edit</a>
+                    <a asp-action="Details" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Details</a>
+                    <a asp-action="Delete" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h3>Courses Taught by Selected Instructor</h3>
+<table class="table table-sm">
+    <tr>
+        <th></th>
+        <th>Number</th>
+        <th>Title</th>
+        <th>Department</th>
+    </tr>
+    @if (Model.Courses != null)
+    {
+        @foreach (var item in Model.Courses)
+        {
+            string selectedRow = "";
+            if (item.CourseId == (int?)ViewData["CourseId"])
+            {
+                selectedRow = "bg-success text-white";
+            }
+            <tr class="@selectedRow">
+                <td>
+                    @Html.ActionLink("Select", "Index", new { courseId = item.CourseId }, new { @class = "btn btn-primary btn-sm" })
+                </td>
+                <td>
+                    @item.CourseId
+                </td>
+                <td>
+                    @item.Title
+                </td>
+                <td>
+                    @item.Department.Name
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr class="text-danger font-weight-bold">
+            <td class="text-center" colspan="4">
+                No record found.
+            </td>
+        </tr>
+    }
+</table>
+
+<h3>
+    Students Enrolled in Selected Course
+</h3>
+<table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Grade</th>
+    </tr>
+    @if (Model.Enrollments != null)
+    {
+        @foreach (var item in Model.Enrollments)
+        {
+            <tr>
+                <td>
+                    @item.Student.FullName
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Grade)
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr class="text-danger font-weight-bold">
+            <td class="text-center" colspan="2">
+                No record found.
+            </td>
+        </tr>
+    }
+</table>
