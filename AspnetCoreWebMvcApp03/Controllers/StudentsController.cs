@@ -86,7 +86,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
             var student = await _context.Students
                 .Include(s => s.Enrollments).ThenInclude(e => e.Course)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.StudentId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (student == null)
             {
                 return NotFound();
@@ -185,7 +185,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                 return NotFound();
             }
 
-            var studentDb = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == id);
+            var studentDb = await _context.Students.FirstOrDefaultAsync(s => s.Id == id);
             var isTrySucccess = await TryUpdateModelAsync<Student>(
                     studentDb, "", 
                     s => s.FirstMidName,
@@ -219,7 +219,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
 
             var student = await _context.Students
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.StudentId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (student == null)
             {
                 return NotFound();

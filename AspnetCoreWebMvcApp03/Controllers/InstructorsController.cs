@@ -45,7 +45,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
             {
                 ViewData["InstructorId"] = id.Value;
                 Instructor instructor = viewModel.Instructors.Where(
-                        i => i.InstructorId == id.Value
+                        i => i.Id == id.Value
                     ).Single();
                 viewModel.Courses = instructor.CourseAssignments.Select(s => s.Course);
             }
@@ -71,7 +71,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
 
             var instructor = await _context.Instructors
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.InstructorId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (instructor == null)
             {
                 return NotFound();
@@ -106,7 +106,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                 {
                     courseAssignments.Add(
                         new CourseAssignment { 
-                            InstructorId = instructor.InstructorId,
+                            InstructorId = instructor.Id,
                             CourseId = int.Parse(courseIdStr)
                         });
                 }
@@ -138,7 +138,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                 .Include(i => i.CourseAssignments)
                     .ThenInclude(ca => ca.Course)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(i => i.InstructorId == id);
+                .FirstOrDefaultAsync(i => i.Id == id);
             if (instructor == null)
             {
                 return NotFound();
@@ -180,7 +180,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                 .Include(i => i.OfficeAssignment)
                 .Include(i => i.CourseAssignments)
                     .ThenInclude(ca => ca.Course)
-                .FirstOrDefaultAsync(i => i.InstructorId == id);
+                .FirstOrDefaultAsync(i => i.Id == id);
 
             var isUpdateable = await TryUpdateModelAsync<Instructor>(
                 instructorDb, "",
@@ -233,7 +233,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                         // add new record
                         instructorToUpdate.CourseAssignments.Add(
                             new CourseAssignment { 
-                                InstructorId = instructorToUpdate.InstructorId,
+                                InstructorId = instructorToUpdate.Id,
                                 CourseId = course.CourseId
                             });
                     }
@@ -259,7 +259,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
             }
 
             var instructor = await _context.Instructors
-                .FirstOrDefaultAsync(m => m.InstructorId == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (instructor == null)
             {
                 return NotFound();
@@ -275,7 +275,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
         {
             var instructor = await _context.Instructors
                 .Include(i => i.CourseAssignments) // to effect cascade delete
-                .SingleAsync(i => i.InstructorId == id);
+                .SingleAsync(i => i.Id == id);
 
             var departments = await _context.Departments
                 .Where(d => d.InstructorId == id)
@@ -290,7 +290,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
 
         private bool InstructorExists(int id)
         {
-            return _context.Instructors.Any(e => e.InstructorId == id);
+            return _context.Instructors.Any(e => e.Id == id);
         }
     }
 }

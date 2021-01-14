@@ -52,7 +52,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
         // GET: Departments/Create
         public IActionResult Create()
         {
-            ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName");
+            ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FullName");
             return View();
         }
 
@@ -69,7 +69,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName", department.InstructorId);
+            ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FullName", department.InstructorId);
             return View(department);
         }
 
@@ -89,7 +89,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
             {
                 return NotFound();
             }
-            ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName", department.InstructorId);
+            ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FullName", department.InstructorId);
             return View(department);
         }
 
@@ -116,7 +116,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                 ModelState.AddModelError(
                     string.Empty, 
                     "Unable to save changes. The department was deleted by another user.");
-                ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName", deletedDepartment.InstructorId);
+                ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FullName", deletedDepartment.InstructorId);
             }
 
             _context.Entry(departmentToUpdate).Property("RowVersion").OriginalValue = rowVersion;
@@ -162,7 +162,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                         if (dbValues.InstructorId != userValues.InstructorId)
                         {
                             Instructor dbInstructor = await _context.Instructors
-                                .FirstOrDefaultAsync(i => i.InstructorId == dbValues.InstructorId);
+                                .FirstOrDefaultAsync(i => i.Id == dbValues.InstructorId);
                             ModelState.AddModelError("InstructorId", $"Current value: {dbInstructor?.FullName}");
                         }
 
@@ -179,7 +179,7 @@ namespace AspnetCoreWebMvcApp03.Controllers
                 }
             }
 
-            ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName", departmentToUpdate.InstructorId);
+            ViewData["InstructorId"] = new SelectList(_context.Instructors, "Id", "FullName", departmentToUpdate.InstructorId);
             return View(departmentToUpdate);
         }
 

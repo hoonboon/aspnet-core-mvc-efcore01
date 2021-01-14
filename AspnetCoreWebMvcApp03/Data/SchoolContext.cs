@@ -20,17 +20,22 @@ namespace AspnetCoreWebMvcApp03.Data
         public DbSet<Instructor> Instructors { get; set; }
         public DbSet<OfficeAssignment> OfficeAssignments { get; set; }
         public DbSet<CourseAssignment> CourseAssignments { get; set; }
+        public DbSet<Person> People { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Course>().ToTable("Course");
             modelBuilder.Entity<Enrollment>().ToTable("Enrollment");
-            modelBuilder.Entity<Student>().ToTable("Student");
             modelBuilder.Entity<Department>().ToTable("Department");
-            modelBuilder.Entity<Instructor>().ToTable("Instructor");
-            modelBuilder.Entity<OfficeAssignment>().ToTable("OfficeAssignment");
             
+            // Refer to: https://docs.microsoft.com/en-us/ef/core/what-is-new/ef-core-3.x/breaking-changes#totable-on-a-derived-type-throws-an-exception
+            // modelBuilder.Entity<Student>().ToTable("Student");
+            // modelBuilder.Entity<Instructor>().ToTable("Instructor");
+            
+            modelBuilder.Entity<OfficeAssignment>().ToTable("OfficeAssignment");
+            modelBuilder.Entity<Person>().ToTable("Person");
+
             modelBuilder.Entity<CourseAssignment>().ToTable("CourseAssignment")
                 .HasKey(c => new { c.CourseId, c.InstructorId });
 

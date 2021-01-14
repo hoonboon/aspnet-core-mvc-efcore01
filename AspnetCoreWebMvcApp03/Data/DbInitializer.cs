@@ -66,16 +66,16 @@ namespace AspnetCoreWebMvcApp03.Data
             {
                 new Department { Name = "English",     Budget = 350000,
                     StartDate = DateTime.Parse("2007-09-01"),
-                    InstructorId  = instructors.Single( i => i.LastName == "Abercrombie").InstructorId },
+                    InstructorId  = instructors.Single( i => i.LastName == "Abercrombie").Id },
                 new Department { Name = "Mathematics", Budget = 100000,
                     StartDate = DateTime.Parse("2007-09-01"),
-                    InstructorId  = instructors.Single( i => i.LastName == "Fakhouri").InstructorId },
+                    InstructorId  = instructors.Single( i => i.LastName == "Fakhouri").Id },
                 new Department { Name = "Engineering", Budget = 350000,
                     StartDate = DateTime.Parse("2007-09-01"),
-                    InstructorId  = instructors.Single( i => i.LastName == "Harui").InstructorId },
+                    InstructorId  = instructors.Single( i => i.LastName == "Harui").Id },
                 new Department { Name = "Economics",   Budget = 100000,
                     StartDate = DateTime.Parse("2007-09-01"),
-                    InstructorId  = instructors.Single( i => i.LastName == "Kapoor").InstructorId }
+                    InstructorId  = instructors.Single( i => i.LastName == "Kapoor").Id }
             };
 
             foreach (Department d in departments)
@@ -118,13 +118,13 @@ namespace AspnetCoreWebMvcApp03.Data
             var officeAssignments = new OfficeAssignment[]
             {
                 new OfficeAssignment {
-                    InstructorId = instructors.Single( i => i.LastName == "Fakhouri").InstructorId,
+                    InstructorId = instructors.Single( i => i.LastName == "Fakhouri").Id,
                     Location = "Smith 17" },
                 new OfficeAssignment {
-                    InstructorId = instructors.Single( i => i.LastName == "Harui").InstructorId,
+                    InstructorId = instructors.Single( i => i.LastName == "Harui").Id,
                     Location = "Gowan 27" },
                 new OfficeAssignment {
-                    InstructorId = instructors.Single( i => i.LastName == "Kapoor").InstructorId,
+                    InstructorId = instructors.Single( i => i.LastName == "Kapoor").Id,
                     Location = "Thompson 304" },
             };
 
@@ -138,35 +138,35 @@ namespace AspnetCoreWebMvcApp03.Data
             {
                 new CourseAssignment {
                     CourseId = courses.Single(c => c.Title == "Chemistry" ).CourseId,
-                    InstructorId = instructors.Single(i => i.LastName == "Kapoor").InstructorId
+                    InstructorId = instructors.Single(i => i.LastName == "Kapoor").Id
                 },
                 new CourseAssignment {
                     CourseId = courses.Single(c => c.Title == "Chemistry" ).CourseId,
-                    InstructorId = instructors.Single(i => i.LastName == "Harui").InstructorId
+                    InstructorId = instructors.Single(i => i.LastName == "Harui").Id
                 },
                 new CourseAssignment {
                     CourseId = courses.Single(c => c.Title == "Microeconomics" ).CourseId,
-                    InstructorId = instructors.Single(i => i.LastName == "Zheng").InstructorId
+                    InstructorId = instructors.Single(i => i.LastName == "Zheng").Id
                 },
                 new CourseAssignment {
                     CourseId = courses.Single(c => c.Title == "Macroeconomics" ).CourseId,
-                    InstructorId = instructors.Single(i => i.LastName == "Zheng").InstructorId
+                    InstructorId = instructors.Single(i => i.LastName == "Zheng").Id
                 },
                 new CourseAssignment {
                     CourseId = courses.Single(c => c.Title == "Calculus" ).CourseId,
-                    InstructorId = instructors.Single(i => i.LastName == "Fakhouri").InstructorId
+                    InstructorId = instructors.Single(i => i.LastName == "Fakhouri").Id
                 },
                 new CourseAssignment {
                     CourseId = courses.Single(c => c.Title == "Trigonometry" ).CourseId,
-                    InstructorId = instructors.Single(i => i.LastName == "Harui").InstructorId
+                    InstructorId = instructors.Single(i => i.LastName == "Harui").Id
                 },
                 new CourseAssignment {
                     CourseId = courses.Single(c => c.Title == "Composition" ).CourseId,
-                    InstructorId = instructors.Single(i => i.LastName == "Abercrombie").InstructorId
+                    InstructorId = instructors.Single(i => i.LastName == "Abercrombie").Id
                 },
                 new CourseAssignment {
                     CourseId = courses.Single(c => c.Title == "Literature" ).CourseId,
-                    InstructorId = instructors.Single(i => i.LastName == "Abercrombie").InstructorId
+                    InstructorId = instructors.Single(i => i.LastName == "Abercrombie").Id
                 },
             };
 
@@ -179,56 +179,56 @@ namespace AspnetCoreWebMvcApp03.Data
             var enrollments = new Enrollment[]
             {
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Alexander").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Alexander").Id,
                     CourseId = courses.Single(c => c.Title == "Chemistry" ).CourseId,
                     Grade = Grade.A
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Alexander").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Alexander").Id,
                     CourseId = courses.Single(c => c.Title == "Microeconomics" ).CourseId,
                     Grade = Grade.C
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Alexander").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Alexander").Id,
                     CourseId = courses.Single(c => c.Title == "Macroeconomics" ).CourseId,
                     Grade = Grade.B
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Alonso").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Alonso").Id,
                     CourseId = courses.Single(c => c.Title == "Calculus" ).CourseId,
                     Grade = Grade.B
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Alonso").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Alonso").Id,
                     CourseId = courses.Single(c => c.Title == "Trigonometry" ).CourseId,
                     Grade = Grade.B
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Alonso").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Alonso").Id,
                     CourseId = courses.Single(c => c.Title == "Composition" ).CourseId,
                     Grade = Grade.B
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Anand").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Anand").Id,
                     CourseId = courses.Single(c => c.Title == "Chemistry" ).CourseId
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Anand").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Anand").Id,
                     CourseId = courses.Single(c => c.Title == "Microeconomics").CourseId,
                     Grade = Grade.B
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Barzdukas").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Barzdukas").Id,
                     CourseId = courses.Single(c => c.Title == "Chemistry").CourseId,
                     Grade = Grade.B
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Li").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Li").Id,
                     CourseId = courses.Single(c => c.Title == "Composition").CourseId,
                     Grade = Grade.B
                 },
                 new Enrollment {
-                    StudentId = students.Single(s => s.LastName == "Justice").StudentId,
+                    StudentId = students.Single(s => s.LastName == "Justice").Id,
                     CourseId = courses.Single(c => c.Title == "Literature").CourseId,
                     Grade = Grade.B
                 }
@@ -238,7 +238,7 @@ namespace AspnetCoreWebMvcApp03.Data
             {
                 var enrollmentInDataBase = 
                     context.Enrollments.Where(
-                        s => (s.Student.StudentId == e.StudentId && s.Course.CourseId == e.CourseId)
+                        s => (s.Student.Id == e.StudentId && s.Course.CourseId == e.CourseId)
                     ).SingleOrDefault();
                 if (enrollmentInDataBase == null)
                 {

@@ -24,7 +24,7 @@
         @foreach (var item in Model.Instructors)
         {
             string selectedRow = "";
-            if (item.InstructorId == (int?)ViewData["InstructorId"])
+            if (item.Id == (int?)ViewData["InstructorId"])
             {
                 selectedRow = "bg-success text-white";
             }
@@ -53,10 +53,10 @@
                     }
                 </td>
                 <td>
-                    <a asp-action="Index" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Select</a>
-                    <a asp-action="Edit" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Edit</a>
-                    <a asp-action="Details" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Details</a>
-                    <a asp-action="Delete" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Delete</a>
+                    <a asp-action="Index" class="btn btn-primary btn-sm" asp-route-id="@item.Id">Select</a>
+                    <a asp-action="Edit" class="btn btn-primary btn-sm" asp-route-id="@item.Id">Edit</a>
+                    <a asp-action="Details" class="btn btn-primary btn-sm" asp-route-id="@item.Id">Details</a>
+                    <a asp-action="Delete" class="btn btn-primary btn-sm" asp-route-id="@item.Id">Delete</a>
                 </td>
             </tr>
         }
