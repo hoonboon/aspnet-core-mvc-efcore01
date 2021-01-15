@@ -37,10 +37,12 @@ namespace AspnetCoreWebMvcApp03.Controllers
                 return NotFound();
             }
 
+            string query = "SELECT * FROM Department WHERE DepartmentId = {0}";
             var department = await _context.Departments
+                .FromSqlRaw(query, id)
                 .Include(d => d.Administrator)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.DepartmentId == id);
+                .FirstOrDefaultAsync();
             if (department == null)
             {
                 return NotFound();

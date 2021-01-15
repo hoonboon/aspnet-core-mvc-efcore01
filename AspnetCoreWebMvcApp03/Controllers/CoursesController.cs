@@ -178,5 +178,24 @@ namespace AspnetCoreWebMvcApp03.Controllers
         {
             return _context.Courses.Any(e => e.CourseId == id);
         }
+
+        public IActionResult UpdateCourseCredits()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateCourseCredits(decimal? Multiplier)
+        {
+            if (Multiplier != null)
+            {
+                ViewData["RowsAffected"] = await _context.Database
+                    .ExecuteSqlRawAsync(
+                        "UPDATE Course SET Credits = Credits * {0}",
+                        parameters: Multiplier
+                    );
+            }
+            return View();
+        }
     }
 }
