@@ -1,9 +1,11 @@
 ﻿using AspnetCoreWebMvcApp03.Data;
 using AspnetCoreWebMvcApp03.Models;
 using AspnetCoreWebMvcApp03.Models.SchoolViewModels;
+using AspnetCoreWebMvcApp03.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,6 +17,8 @@ namespace AspnetCoreWebMvcApp03.Controllers
         private readonly SchoolContext _context;
         private readonly ILogger<HomeController> _logger;
 
+        const string SessionKeyTime = "_Time";
+
         public HomeController(SchoolContext context, ILogger<HomeController> logger)
         {
             _context = context;
@@ -24,6 +28,15 @@ namespace AspnetCoreWebMvcApp03.Controllers
         public IActionResult Index()
         {
             _logger.LogInformation("Index() called.");
+
+            if (HttpContext.Session.Get<DateTime>(SessionKeyTime) == default)
+            {
+                HttpContext.Session.Set<DateTime>(SessionKeyTime, DateTime.Now);
+            }
+            else
+            {
+                _logger.LogInformation("SessionKeyTime = " + HttpContext.Session.Get<DateTime>(SessionKeyTime));
+            }
 
             return View();
         }

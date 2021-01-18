@@ -56,6 +56,11 @@ namespace AspnetCoreWebMvcApp03
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.ConfigureKestrel(serverOptions =>
+                    {
+                        serverOptions.AddServerHeader = false;
+                    });
+
                     webBuilder.UseStartup<Startup>();
                 })
                 .ConfigureLogging(logging => {

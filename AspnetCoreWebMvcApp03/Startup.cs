@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace AspnetCoreWebMvcApp03
 {
@@ -23,11 +24,11 @@ namespace AspnetCoreWebMvcApp03
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+            //services.Configure<CookiePolicyOptions>(options =>
+            //{
+            //    options.CheckConsentNeeded = context => true;
+            //    options.MinimumSameSitePolicy = SameSiteMode.None;
+            //});
 
             services.AddDbContext<SchoolContext>(options =>
             {
@@ -37,7 +38,31 @@ namespace AspnetCoreWebMvcApp03
                     options.EnableSensitiveDataLogging();
             });
 
+            if (_env.IsDevelopment())
+            {
+                services.AddDistributedMemoryCache();
+            }
+            else
+            {
+                services.AddDistributedSqlServerCache(options =>
+                {
+                    options.ConnectionString =
+                        Configuration.GetConnectionString("ConnStr_DistCache");
+                    options.SchemaName = "dbo";
+                    options.TableName = "AppCache";
+                });
+            }
+
+            services.AddSession(options =>
+            {
+                options.Cookie.Name = ".AspnetCoreWebMvcApp03.Session";
+                options.IdleTimeout = TimeSpan.FromSeconds(30 * 60);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             services.AddControllersWithViews();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,6 +81,8 @@ namespace AspnetCoreWebMvcApp03
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseSession();
 
             app.UseEndpoints(endpoints =>
             {
