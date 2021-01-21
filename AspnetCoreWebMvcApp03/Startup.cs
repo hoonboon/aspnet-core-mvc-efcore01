@@ -1,3 +1,4 @@
+using AspnetCoreWebMvcApp03.Areas.Identity.Data;
 using AspnetCoreWebMvcApp03.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,6 +38,10 @@ namespace AspnetCoreWebMvcApp03
                 if (_env.IsDevelopment())
                     options.EnableSensitiveDataLogging();
             });
+
+            // must add this after scaffold Identity
+            services.AddDefaultIdentity<UserProfile>(options => options.SignIn.RequireConfirmedAccount = true)
+                    .AddEntityFrameworkStores<SchoolContext>();
 
             if (_env.IsDevelopment())
             {
@@ -80,6 +85,8 @@ namespace AspnetCoreWebMvcApp03
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseSession();
@@ -89,6 +96,9 @@ namespace AspnetCoreWebMvcApp03
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                
+                // must add this after scaffold Identity
+                endpoints.MapRazorPages();
             });
         }
     }

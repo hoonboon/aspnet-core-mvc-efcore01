@@ -1,4 +1,6 @@
-﻿using AspnetCoreWebMvcApp03.Models;
+﻿using AspnetCoreWebMvcApp03.Areas.Identity.Data;
+using AspnetCoreWebMvcApp03.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace AspnetCoreWebMvcApp03.Data
 {
-    public class SchoolContext : DbContext
+    // must extend IdentityDbContext first before being re-used to Scaffold Identity
+    public class SchoolContext : IdentityDbContext<UserProfile>
     {
         public SchoolContext(DbContextOptions<SchoolContext> options) : base(options)
         {
@@ -24,6 +27,9 @@ namespace AspnetCoreWebMvcApp03.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // must add this line when scaffold the Identity
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Course>().ToTable("Course");
             modelBuilder.Entity<Enrollment>().ToTable("Enrollment");
             modelBuilder.Entity<Student>().ToTable("Student");
