@@ -10,9 +10,11 @@ using AspnetCoreWebMvcApp03.Models;
 using Microsoft.Extensions.Logging;
 using AspnetCoreWebMvcApp03.Models.SchoolViewModels;
 using AspnetCoreWebMvcApp03.Utils;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AspnetCoreWebMvcApp03.Controllers
 {
+    [Authorize]
     public class InstructorsController : Controller
     {
         private readonly SchoolContext _context;

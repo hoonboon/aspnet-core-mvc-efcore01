@@ -1,6 +1,7 @@
 ﻿using AspnetCoreWebMvcApp03.Data;
 using AspnetCoreWebMvcApp03.Models;
 using AspnetCoreWebMvcApp03.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace AspnetCoreWebMvcApp03.Controllers
 {
+    [Authorize]
     public class StudentsController : Controller
     {
         private readonly SchoolContext _context;

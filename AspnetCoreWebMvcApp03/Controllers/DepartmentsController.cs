@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using AspnetCoreWebMvcApp03.Data;
 using AspnetCoreWebMvcApp03.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AspnetCoreWebMvcApp03.Controllers
 {
+    [Authorize]
     public class DepartmentsController : Controller
     {
         private readonly SchoolContext _context;
