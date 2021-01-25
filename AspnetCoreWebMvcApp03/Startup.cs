@@ -2,7 +2,6 @@ using AspnetCoreWebMvcApp03.Areas.Identity.Data;
 using AspnetCoreWebMvcApp03.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +39,8 @@ namespace AspnetCoreWebMvcApp03
             });
 
             // must add this after scaffold Identity
-            services.AddDefaultIdentity<UserProfile>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                    .AddRoles<AppRole>()
                     .AddEntityFrameworkStores<SchoolContext>();
 
             if (_env.IsDevelopment())
@@ -67,7 +67,6 @@ namespace AspnetCoreWebMvcApp03
             });
 
             services.AddControllersWithViews();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

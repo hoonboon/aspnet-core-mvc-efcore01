@@ -7,14 +7,8 @@ using System.Threading.Tasks;
 
 namespace AspnetCoreWebMvcApp03.Areas.Identity.Data
 {
-    public class UserProfile : IdentityUser
+    public class AppUserLogin : IdentityUserLogin<string>
     {
-        [PersonalData]
-        public string Name { get; set; }
-
-        [PersonalData]
-        [Display(Name = "Date of Birth")]
-        public DateTime DOB { get; set; }
-
+        public virtual AppUser User { get; set; }
     }
 }

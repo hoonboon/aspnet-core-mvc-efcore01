@@ -13,10 +13,10 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account
     [AllowAnonymous]
     public class RegisterConfirmationModel : PageModel
     {
-        private readonly UserManager<UserProfile> _userManager;
+        private readonly UserManager<AppUser> _userManager;
         private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<UserProfile> userManager, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<AppUser> userManager, IEmailSender sender)
         {
             _userManager = userManager;
             _sender = sender;
