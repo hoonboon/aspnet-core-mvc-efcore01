@@ -1,9 +1,11 @@
 using AspnetCoreWebMvcApp03.Areas.Identity.Data;
 using AspnetCoreWebMvcApp03.Data;
+using AspnetCoreWebMvcApp03.Services.Email;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -104,6 +106,11 @@ namespace AspnetCoreWebMvcApp03
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
+
+            // configure email sender
+            services.AddTransient<IEmailSender, EmailSender>();
+            services.Configure<EmailSenderOptions>(
+                Configuration.GetSection(EmailSenderOptions.EmailSender));
 
             services.AddControllersWithViews();
         }
