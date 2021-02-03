@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspnetCoreWebMvcApp03.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    [Migration("20210121100027_CustomUserData")]
-    partial class CustomUserData
+    [Migration("20210202095031_InitialCreate")]
+    partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
