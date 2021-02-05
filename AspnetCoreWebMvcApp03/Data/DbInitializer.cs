@@ -1,6 +1,10 @@
-﻿using AspnetCoreWebMvcApp03.Models;
+﻿using AspnetCoreWebMvcApp03.Areas.Identity.Data;
+using AspnetCoreWebMvcApp03.Models;
+using AspnetCoreWebMvcApp03.Utils;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AspnetCoreWebMvcApp03.Data
 {
@@ -246,6 +250,46 @@ namespace AspnetCoreWebMvcApp03.Data
                 }
             }
             context.SaveChanges();
+        }
+
+        public static async Task SeedRolesAsync(
+            UserManager<UserProfile> userManager, RoleManager<IdentityRole> roleManager)
+        {
+            //Seed Roles
+            await roleManager.CreateAsync(new IdentityRole(Roles.SuperAdmin.ToString()));
+            await roleManager.CreateAsync(new IdentityRole(Roles.Admin.ToString()));
+            await roleManager.CreateAsync(new IdentityRole(Roles.Manager.ToString()));
+            await roleManager.CreateAsync(new IdentityRole(Roles.Staff.ToString()));
+        }
+
+        public static async Task SeedSuperAdminAsync(
+            UserManager<UserProfile> userManager, string defaultUserPwd)
+        {
+            //Seed Default User
+            var defaultUser = new UserProfile
+            {
+                UserName = "superadmin",
+                Email = "superadmin@e.mail",
+                FirstName = "Super",
+                LastName = "Admin",
+                DOB = DateTime.Now,
+                EmailConfirmed = true,
+                PhoneNumberConfirmed = true
+            };
+            
+            if (userManager.Users.All(u => u.Id != defaultUser.Id))
+            {
+                var user = await userManager.FindByEmailAsync(defaultUser.Email);
+                if (user == null)
+                {
+                    await userManager.CreateAsync(defaultUser, defaultUserPwd);
+                    await userManager.AddToRoleAsync(defaultUser, Roles.Staff.ToString());
+                    await userManager.AddToRoleAsync(defaultUser, Roles.Manager.ToString());
+                    await userManager.AddToRoleAsync(defaultUser, Roles.Admin.ToString());
+                    await userManager.AddToRoleAsync(defaultUser, Roles.SuperAdmin.ToString());
+                }
+
+            }
         }
     }
 }

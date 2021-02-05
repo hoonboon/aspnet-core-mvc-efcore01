@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using AspnetCoreWebMvcApp03.Areas.Identity.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -23,10 +25,11 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account.Manage
             _signInManager = signInManager;
         }
 
-        public string Username { get; set; }
-
         [TempData]
         public string StatusMessage { get; set; }
+
+        [TempData]
+        public string UserNameChangeLimitMessage { get; set; }
 
         [BindProperty]
         public InputModel Input { get; set; }
@@ -35,8 +38,17 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account.Manage
         {
             [Required]
             [DataType(DataType.Text)]
-            [Display(Name = "Full name")]
-            public string Name { get; set; }
+            [Display(Name = "First name")]
+            public string FirstName { get; set; }
+
+            [Required]
+            [DataType(DataType.Text)]
+            [Display(Name = "Last name")]
+            public string LastName { get; set; }
+
+            [Required]
+            [DataType(DataType.Text)]
+            public string Username { get; set; }
 
             [Required]
             [Display(Name = "Birth Date")]
@@ -46,6 +58,9 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            [Display(Name = "Profile Picture")]
+            public byte[] ProfilePicture { get; set; }
         }
 
         private async Task LoadAsync(UserProfile user)
@@ -53,13 +68,14 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
-            Username = userName;
-
             Input = new InputModel
             {
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = userName,
                 DOB = user.DOB,
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                ProfilePicture = user.ProfilePicture
             };
         }
 
@@ -70,7 +86,11 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account.Manage
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
-
+            
+            if (user.UsernameChangeLimit > 0)
+            {
+                UserNameChangeLimitMessage = $"You can change your username {user.UsernameChangeLimit} more time(s).";
+            }
             await LoadAsync(user);
             return Page();
         }
@@ -100,14 +120,52 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account.Manage
                 }
             }
 
-            if (Input.Name != user.Name)
+            if (Input.FirstName != user.FirstName)
             {
-                user.Name = Input.Name;
+                user.FirstName = Input.FirstName;
+            }
+
+            if (Input.LastName != user.LastName)
+            {
+                user.LastName = Input.LastName;
+            }
+
+            if (user.UsernameChangeLimit > 0)
+            {
+                if (Input.Username != user.UserName)
+                {
+                    var userNameExists = await _userManager.FindByNameAsync(Input.Username);
+                    if (userNameExists != null)
+                    {
+                        StatusMessage = "User name already taken. Use a different username.";
+                        return RedirectToPage();
+                    }
+                    var setUserName = await _userManager.SetUserNameAsync(user, Input.Username);
+                    if (!setUserName.Succeeded)
+                    {
+                        StatusMessage = "Unexpected error when trying to set user name.";
+                        return RedirectToPage();
+                    }
+                    else
+                    {
+                        user.UsernameChangeLimit -= 1;
+                    }
+                }
             }
 
             if (Input.DOB != user.DOB)
             {
                 user.DOB = Input.DOB;
+            }
+
+            if (Request.Form.Files.Count > 0)
+            {
+                IFormFile file = Request.Form.Files.FirstOrDefault();
+                using (var dataStream = new MemoryStream())
+                {
+                    await file.CopyToAsync(dataStream);
+                    user.ProfilePicture = dataStream.ToArray();
+                }
             }
 
             await _userManager.UpdateAsync(user);
