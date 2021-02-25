@@ -1,0 +1,37 @@
+﻿@model List<Microsoft.AspNetCore.Identity.IdentityRole>
+@{
+    ViewData["Title"] = "Roles";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<h1>Roles</h1>
+@*<br />
+<div>
+    <form method="post" asp-action="CreateRole" asp-controller="Roles">
+        <div class="input-group">
+            <input name="roleName" class="form-control w-25" placeholder="New Role Name">
+            <span class="input-group-btn">
+                <button class="btn btn-info">Create</button>
+            </span>
+        </div>
+    </form>
+</div>*@
+<br />
+<div>
+    <table class="table table-striped">
+        <thead>
+            <tr class="row">
+                <th class="col">Id</th>
+                <th class="col">Role Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var role in Model)
+            {
+                <tr class="row">
+                    <td class="col">@role.Id</td>
+                    <td class="col">@role.Name</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

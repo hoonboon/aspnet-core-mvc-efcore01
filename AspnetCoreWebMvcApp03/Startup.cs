@@ -1,8 +1,10 @@
 using AspnetCoreWebMvcApp03.Areas.Identity.Data;
 using AspnetCoreWebMvcApp03.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,8 +42,10 @@ namespace AspnetCoreWebMvcApp03
             });
 
             // must add this after scaffold Identity
-            services.AddDefaultIdentity<UserProfile>(options => options.SignIn.RequireConfirmedAccount = true)
-                    .AddEntityFrameworkStores<SchoolContext>();
+            services.AddIdentity<UserProfile, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+                    .AddEntityFrameworkStores<SchoolContext>()
+                    .AddDefaultUI()
+                    .AddDefaultTokenProviders();
 
             if (_env.IsDevelopment())
             {
@@ -67,6 +71,14 @@ namespace AspnetCoreWebMvcApp03
             });
 
             services.AddControllersWithViews();
+            services.AddRazorPages();
+
+            services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
 
         }
 

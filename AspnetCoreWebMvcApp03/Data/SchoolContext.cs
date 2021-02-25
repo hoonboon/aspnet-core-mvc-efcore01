@@ -1,5 +1,6 @@
 ﻿using AspnetCoreWebMvcApp03.Areas.Identity.Data;
 using AspnetCoreWebMvcApp03.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -29,6 +30,35 @@ namespace AspnetCoreWebMvcApp03.Data
         {
             // must add this line when scaffold the Identity
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<UserProfile>(entity =>
+            {
+                entity.ToTable(name: "User", schema: "Identity");
+            });
+            modelBuilder.Entity<IdentityRole>(entity =>
+            {
+                entity.ToTable(name: "Role", schema: "Identity");
+            });
+            modelBuilder.Entity<IdentityUserRole<string>>(entity =>
+            {
+                entity.ToTable("UserRoles", "Identity");
+            });
+            modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
+            {
+                entity.ToTable("UserClaims", "Identity");
+            });
+            modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
+            {
+                entity.ToTable("UserLogins", "Identity");
+            });
+            modelBuilder.Entity<IdentityRoleClaim<string>>(entity =>
+            {
+                entity.ToTable("RoleClaims", "Identity");
+            });
+            modelBuilder.Entity<IdentityUserToken<string>>(entity =>
+            {
+                entity.ToTable("UserTokens", "Identity");
+            });
 
             modelBuilder.Entity<Course>().ToTable("Course");
             modelBuilder.Entity<Enrollment>().ToTable("Enrollment");

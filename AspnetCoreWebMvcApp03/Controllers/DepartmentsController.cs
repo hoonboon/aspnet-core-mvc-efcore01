@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AspnetCoreWebMvcApp03.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Manager")]
     public class DepartmentsController : Controller
     {
         private readonly SchoolContext _context;

@@ -38,18 +38,51 @@
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Students" asp-action="Index">Students</a>
+                            @if (User.IsInRole(Roles.Staff.ToString())
+                                || User.IsInRole(Roles.Manager.ToString()))
+                            {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button"
+                                   data-toggle="dropdown" aria-expanded="false">
+                                    School Management
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Students" asp-action="Index">Students</a>
+                                    </li>
+                                    @if (User.IsInRole(Roles.Manager.ToString()))
+                                    {
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Courses" asp-action="Index">Courses</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Instructors" asp-action="Index">Instructors</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Departments" asp-action="Index">Departments</a>
+                                    </li>
+                                    }
+                                </ul>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Courses" asp-action="Index">Courses</a>
+                            }   
+                            @if (User.IsInRole(Roles.Admin.ToString()))
+                            {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button"
+                                   data-toggle="dropdown" aria-expanded="false">
+                                    Administration
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                                    @*<li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Roles" asp-action="Index">Roles Management</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>*@
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-controller="UserRoles" asp-action="Index">User Roles Management</a>
+                                    </li>
+                                </ul>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Instructors" asp-action="Index">Instructors</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Departments" asp-action="Index">Departments</a>
-                            </li>
+                            }
                         }
                     </ul>
                 </div>

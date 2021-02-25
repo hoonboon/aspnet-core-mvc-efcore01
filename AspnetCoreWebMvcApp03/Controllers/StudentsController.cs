@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AspnetCoreWebMvcApp03.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Staff")]
     public class StudentsController : Controller
     {
         private readonly SchoolContext _context;

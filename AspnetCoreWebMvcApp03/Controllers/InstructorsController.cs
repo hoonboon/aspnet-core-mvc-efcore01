@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AspnetCoreWebMvcApp03.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Manager")]
     public class InstructorsController : Controller
     {
         private readonly SchoolContext _context;
@@ -157,7 +157,8 @@ namespace AspnetCoreWebMvcApp03.Controllers
             foreach (var course in allCourses)
             {
                 courseOptions.Add(
-                    new CourseAssignedData { 
+                    new CourseAssignedData
+                    { 
                         CourseId = course.CourseId,
                         Title = course.Title,
                         IsAssigned = currentAssignedCoursesId.Contains(course.CourseId)

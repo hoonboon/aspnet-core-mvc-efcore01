@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using System.Net.Mail;
+using AspnetCoreWebMvcApp03.Utils;
 
 namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account
 {
@@ -48,8 +50,13 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account
         {
             [Required]
             [DataType(DataType.Text)]
-            [Display(Name = "Full name")]
-            public string Name { get; set; }
+            [Display(Name = "First name")]
+            public string FirstName { get; set; }
+
+            [Required]
+            [DataType(DataType.Text)]
+            [Display(Name = "Last name")]
+            public string LastName { get; set; }
 
             [Required]
             [Display(Name = "Birth Date")]
@@ -85,16 +92,22 @@ namespace AspnetCoreWebMvcApp03.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
+                MailAddress address = new MailAddress(Input.Email);
+                string userName = address.User;
                 var user = new UserProfile {
-                    Name = Input.Name,
+                    FirstName = Input.FirstName,
+                    LastName = Input.LastName,
                     DOB = Input.DOB,
-                    UserName = Input.Email, 
+                    UserName = userName, 
                     Email = Input.Email 
                 };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
+
+                    // Set default role for newly registered user
+                    await _userManager.AddToRoleAsync(user, Roles.Staff.ToString());
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

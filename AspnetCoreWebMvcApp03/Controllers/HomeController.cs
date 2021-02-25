@@ -2,6 +2,7 @@
 using AspnetCoreWebMvcApp03.Models;
 using AspnetCoreWebMvcApp03.Models.SchoolViewModels;
 using AspnetCoreWebMvcApp03.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace AspnetCoreWebMvcApp03.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly SchoolContext _context;
