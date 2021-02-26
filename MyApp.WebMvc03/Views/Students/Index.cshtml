@@ -1,0 +1,89 @@
+﻿@model MyApp.WebMvc03.Utils.PaginatedList<MyApp.WebMvc03.Models.Student>
+
+@{
+    ViewData["Title"] = "Students";
+}
+
+<h1>Students</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<form asp-action="Index" method="get">
+    <div class="form-row align-items-center">
+        <div class="col-auto">
+            <input type="text" class="form-control mb-2" name="SearchStringNext" 
+                   placeholder="Find by Name" value="@ViewData["CurrentSearchString"]" >
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary mb-2">Search</button>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Index" class="btn btn-primary mb-2">Reset</a>
+        </div>
+    </div>
+</form>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["NextSortLname"]" asp-route-searchStringCurrent="@ViewData["CurrentSearchString"]">
+                    Last Name
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["NextSortFname"]" asp-route-searchStringCurrent="@ViewData["CurrentSearchString"]">
+                    First Name
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortOrder="@ViewData["NextSortDate"]" asp-route-searchStringCurrent="@ViewData["CurrentSearchString"]">
+                    Enrollment Date
+                </a>
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstMidName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EnrollmentDate)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.StudentId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.StudentId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.StudentId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+@{
+    var prevDisabled = Model.HasPreviousPage ? "" : "disabled";
+    var nextDisabled = Model.HasNextPage ? "" : "disabled";
+}
+<div>
+    <a asp-action="Index" class="btn btn-primary @prevDisabled"
+       asp-route-sortOrder="@ViewData["SortOrder"]"
+       asp-route-pageNumber="@(Model.PageIndex - 1)"
+       asp-route-searchStringCurrent="@ViewData["CurrentSearchString"]">
+        Previous
+    </a>
+    <a asp-action="Index" class="btn btn-primary @nextDisabled"
+       asp-route-sortOrder="@ViewData["SortOrder"]"
+       asp-route-pageNumber="@(Model.PageIndex + 1)"
+       asp-route-searchStringCurrent="@ViewData["CurrentSearchString"]">
+        Next
+    </a>
+    <div class="float-right font-weight-bold">Page @Model.PageIndex of @Model.TotalPages</div>
+</div>

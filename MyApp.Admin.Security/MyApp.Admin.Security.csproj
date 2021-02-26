@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>MyApp.Admin.Security</AssemblyName>
+    <RootNamespace>MyApp.Admin.Security</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Domains\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
+</Project>
