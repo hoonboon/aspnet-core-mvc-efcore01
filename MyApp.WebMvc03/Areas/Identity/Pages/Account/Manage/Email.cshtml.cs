@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Linq;
 using System.Threading.Tasks;
-using MyApp.WebMvc03.Areas.Identity.Data;
+using MyApp.Admin.Security.Domains;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;

@@ -7,8 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Domains\" />
-    <Folder Include="Services\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Public\Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.11" />
   </ItemGroup>
 
 </Project>

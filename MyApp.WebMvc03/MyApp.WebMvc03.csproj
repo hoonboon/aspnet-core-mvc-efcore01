@@ -23,11 +23,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Migrations\" />
+    <ProjectReference Include="..\MyApp.Admin.Security\MyApp.Admin.Security.csproj" />
+    <ProjectReference Include="..\MyApp.School\MyApp.School.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MyApp.Admin.Security\MyApp.Admin.Security.csproj" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

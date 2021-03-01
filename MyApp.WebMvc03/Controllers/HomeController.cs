@@ -1,11 +1,11 @@
-﻿using MyApp.WebMvc03.Data;
-using MyApp.WebMvc03.Models;
-using MyApp.WebMvc03.Models.SchoolViewModels;
-using MyApp.WebMvc03.Utils;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyApp.School.Public.Data;
+using MyApp.School.Public.Dtos;
+using MyApp.WebMvc03.Models;
+using MyApp.WebMvc03.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -16,12 +16,12 @@ namespace MyApp.WebMvc03.Controllers
     [AllowAnonymous]
     public class HomeController : Controller
     {
-        private readonly SchoolContext _context;
+        private readonly SchoolDbContext _context;
         private readonly ILogger<HomeController> _logger;
 
         const string SessionKeyTime = "_Time";
 
-        public HomeController(SchoolContext context, ILogger<HomeController> logger)
+        public HomeController(SchoolDbContext context, ILogger<HomeController> logger)
         {
             _context = context;
             _logger = logger;

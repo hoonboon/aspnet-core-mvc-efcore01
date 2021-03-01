@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using MyApp.WebMvc03.Areas.Identity.Data;
+using MyApp.Admin.Security.Domains;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;

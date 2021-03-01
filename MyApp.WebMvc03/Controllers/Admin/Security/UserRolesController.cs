@@ -1,10 +1,9 @@
-﻿using MyApp.WebMvc03.Areas.Identity.Data;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MyApp.Admin.Security.Dtos;
-using System;
+using MyApp.Admin.Security.Domains;
+using MyApp.Admin.Security.Public.Dtos;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
