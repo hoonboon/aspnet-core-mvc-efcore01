@@ -1,4 +1,4 @@
-﻿@model MyApp.School.Domains.Course
+﻿@model MyApp.School.Public.Dtos.CourseAddEditDto
 
 @{
     ViewData["Title"] = "Edit";
@@ -28,8 +28,8 @@
                 <span asp-validation-for="Credits" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Department" class="control-label"></label>
-                <select asp-for="DepartmentId" class="form-control" asp-items="ViewBag.DepartmentId">
+                <label asp-for="DepartmentId" class="control-label"></label>
+                <select asp-for="DepartmentId" class="form-control" asp-items="ViewBag.DepartmentOptions">
                     <option value="">-- Select Department --</option>
                 </select>
                 <span asp-validation-for="DepartmentId" class="text-danger"></span>

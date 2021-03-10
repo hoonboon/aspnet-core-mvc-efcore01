@@ -7,7 +7,6 @@ namespace MyApp.School.Domains
     public class Course
     {
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        [Display(Name = "Course Number")]
         public int CourseId { get; set; }
         
         [StringLength(50, MinimumLength = 3)]

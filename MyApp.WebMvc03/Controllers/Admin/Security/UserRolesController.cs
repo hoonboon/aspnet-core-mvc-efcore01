@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MyApp.Admin.Security.Domains;
 using MyApp.Admin.Security.Public.Dtos;
+using MyApp.Admin.Security.Public.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,91 +10,47 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
 {
     public class UserRolesController : Controller
     {
-        private readonly UserManager<UserProfile> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-
         private static readonly string _viewFolder = "/Views/Admin/Security/UserRoles/";
-        
-        public UserRolesController(
-            UserManager<UserProfile> userManager, RoleManager<IdentityRole> roleManager)
-        {
-            _roleManager = roleManager;
-            _userManager = userManager;
-        }
 
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index([FromServices] IUserRoleService service)
         {
-            var users = await _userManager.Users.ToListAsync();
-            var userRolesList = new List<UserRoleData>();
-            
-            foreach (UserProfile user in users)
-            {
-                var tempViewModel = new UserRoleData();
-                tempViewModel.UserId = user.Id;
-                tempViewModel.Email = user.Email;
-                tempViewModel.FirstName = user.FirstName;
-                tempViewModel.LastName = user.LastName;
-                tempViewModel.Roles = await GetUserRoles(user);
-                userRolesList.Add(tempViewModel);
-            }
+            var userRolesList = await service.ListAllUsersWithRolesAsync();
             return View($"{_viewFolder}Index.cshtml", userRolesList);
         }
 
-        private async Task<List<string>> GetUserRoles(UserProfile user)
-        {
-            return new List<string>(await _userManager.GetRolesAsync(user));
-        }
-
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> Manage(string userId)
+        public async Task<IActionResult> Manage(string userId, [FromServices] IUserRoleService service)
         {
             ViewBag.userId = userId;
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await service.GetUserProfileAsync(userId);
             if (user == null)
             {
                 ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
                 return View("NotFound");
             }
             ViewBag.UserName = user.UserName;
-            var model = new List<UserRoleAssignedData>();
-            foreach (var role in _roleManager.Roles)
-            {
-                var userRolesAssigned = new UserRoleAssignedData
-                {
-                    RoleId = role.Id,
-                    RoleName = role.Name
-                };
-                if (await _userManager.IsInRoleAsync(user, role.Name))
-                {
-                    userRolesAssigned.IsAssigned = true;
-                }
-                else
-                {
-                    userRolesAssigned.IsAssigned = false;
-                }
-                model.Add(userRolesAssigned);
-            }
+            var model = await service.ListUserRolesForManageViewAsync(user);
             return View($"{_viewFolder}Manage.cshtml", model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Manage(List<UserRoleAssignedData> model, string userId)
+        public async Task<IActionResult> Manage(List<UserRoleAssignedData> model, string userId, [FromServices] IUserRoleService service)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await service.GetUserProfileAsync(userId);
             if (user == null)
             {
                 ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
                 return View("NotFound");
             }
-            var roles = await _userManager.GetRolesAsync(user);
-            var result = await _userManager.RemoveFromRolesAsync(user, roles);
+            var roles = await service.ListRolesAssignedToUserAsync(user);
+            var result = await service.RemoveRolesFromUserAsync(user, roles);
             if (!result.Succeeded)
             {
                 ModelState.AddModelError("", "Cannot remove user existing roles");
                 return View(model);
             }
-            result = await _userManager.AddToRolesAsync(
+            result = await service.AddRolesToUserAsync(
                 user, 
                 model.Where(x => x.IsAssigned)
                     .Select(y => y.RoleName)

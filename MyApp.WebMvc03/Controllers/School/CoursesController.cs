@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MyApp.School.Domains;
-using MyApp.School.Public.Data;
+using MyApp.School.Public.Dtos;
+using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Utils;
-using System.Linq;
+using System;
 using System.Threading.Tasks;
 
 namespace MyApp.WebMvc03.Controllers.School
@@ -14,36 +13,30 @@ namespace MyApp.WebMvc03.Controllers.School
     [Authorize(Roles = "Manager")]
     public class CoursesController : Controller
     {
-        private readonly SchoolDbContext _context;
         private readonly ILogger<CoursesController> _logger;
 
         private static readonly string _viewFolder = "/Views/School/Courses/";
 
-        public CoursesController(SchoolDbContext context, ILogger<CoursesController> logger)
+        public CoursesController(ILogger<CoursesController> logger)
         {
-            _context = context;
             _logger = logger;
         }
 
         // GET: Courses
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index([FromServices] ICourseService service)
         {
-            var schoolContext = _context.Courses.Include(c => c.Department);
-            return View($"{_viewFolder}Index.cshtml", await schoolContext.AsNoTracking().ToListAsync());
+            return View($"{_viewFolder}Index.cshtml", await service.ListAllCoursesAsync());
         }
 
         // GET: Courses/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, [FromServices] ICourseService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .Include(c => c.Department)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.CourseId == id);
+            var course = await service.GetCourseByIdForDetailAsync(id.Value);
             if (course == null)
             {
                 return NotFound();
@@ -53,19 +46,18 @@ namespace MyApp.WebMvc03.Controllers.School
         }
 
         // GET: Courses/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create([FromServices] ICourseService service)
         {
-            PopulateDepartmentsDropDownList();
+            await PopulateDepartmentsDropDownListAsync(service);
             return View($"{_viewFolder}Create.cshtml");
         }
 
-        private void PopulateDepartmentsDropDownList(object selectedDepartment = null)
+        private async Task PopulateDepartmentsDropDownListAsync(ICourseService service, object selectedDepartment = null)
         {
-            var departmentsQuery = from d in _context.Departments
-                                   orderby d.Name
-                                   select d;
-            
-            ViewBag.DepartmentId = new SelectList(departmentsQuery.AsNoTracking(), "DepartmentId", "Name", selectedDepartment);
+            ViewBag.DepartmentOptions = new SelectList(
+                await service.ListAllDepartmentOptionsAsync(), 
+                "DepartmentId", "DepartmentName", 
+                selectedDepartment);
         }
 
         // POST: Courses/Create
@@ -73,42 +65,39 @@ namespace MyApp.WebMvc03.Controllers.School
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CourseId,Title,Credits,DepartmentId")] Course course)
+        public async Task<IActionResult> Create(
+            CourseAddEditDto courseDto, [FromServices] ICourseService service)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Add(course);
-                    await _context.SaveChangesAsync();
+                    await service.CreateCourseAndSaveAsync(courseDto);
                     return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateException)
+                catch (Exception)
                 {
-                    //_logger.LogError(ex, "Failed to create new Course: {Course}", course.ToString());
                     ModelState.AddModelError("", Constants.ERROR_MESSAGE_SAVE);
                 }
             }
-            PopulateDepartmentsDropDownList();
-            return View($"{_viewFolder}Create.cshtml", course);
+            await PopulateDepartmentsDropDownListAsync(service);
+            return View($"{_viewFolder}Create.cshtml", courseDto);
         }
 
         // GET: Courses/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id, [FromServices] ICourseService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.CourseId == id);
+            var course = await service.GetCourseByIdForEditAsync(id.Value);
             if (course == null)
             {
                 return NotFound();
             }
-            PopulateDepartmentsDropDownList(course.DepartmentId);
+            await PopulateDepartmentsDropDownListAsync(service, course.DepartmentId);
             return View($"{_viewFolder}Edit.cshtml", course);
         }
 
@@ -117,46 +106,35 @@ namespace MyApp.WebMvc03.Controllers.School
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostEdit(int? id)
+        public async Task<IActionResult> PostEdit(
+            CourseAddEditDto courseDto, [FromServices] ICourseService service)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var courseDb = await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == id);
-            var isUpdateable = await TryUpdateModelAsync<Course>(
-                courseDb, "", 
-                c => c.Credits, c => c.DepartmentId, c => c.Title);
-            if (isUpdateable)
+            if (ModelState.IsValid)
             {
                 try
                 {
-                    await _context.SaveChangesAsync();
+                    await service.UpdateCourseAndSaveAsync(courseDto);
                 }
-                catch (DbUpdateException)
+                catch (Exception)
                 {
                     //_logger.LogError(ex, "Failed to edit Course: id={id}", id);
                     ModelState.AddModelError("", Constants.ERROR_MESSAGE_SAVE);
                 }
                 return RedirectToAction(nameof(Index));
             }
-            PopulateDepartmentsDropDownList(courseDb.DepartmentId);
+            await PopulateDepartmentsDropDownListAsync(service, courseDto.DepartmentId);
             return RedirectToAction(nameof(Index));
         }
 
         // GET: Courses/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id, [FromServices] ICourseService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var course = await _context.Courses
-                .Include(c => c.Department)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.CourseId == id);
+            var course = await service.GetCourseByIdForDetailAsync(id.Value);
             if (course == null)
             {
                 return NotFound();
@@ -168,17 +146,11 @@ namespace MyApp.WebMvc03.Controllers.School
         // POST: Courses/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostDelete(int id)
+        public async Task<IActionResult> PostDelete(int id, [FromServices] ICourseService service)
         {
-            var course = await _context.Courses.FindAsync(id);
-            _context.Courses.Remove(course);
-            await _context.SaveChangesAsync();
+            await service.DeleteCourseAndSaveAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CourseExists(int id)
-        {
-            return _context.Courses.Any(e => e.CourseId == id);
-        }
     }
 }

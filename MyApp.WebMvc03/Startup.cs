@@ -8,8 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyApp.Admin.Security.Domains;
 using MyApp.Admin.Security.Public.Data;
+using MyApp.Admin.Security.Public.Services;
 using MyApp.School.Public.Data;
+using MyApp.School.Public.Services;
+using NetCore.AutoRegisterDi;
 using System;
+using System.Reflection;
 
 namespace MyApp.WebMvc03
 {
@@ -92,6 +96,14 @@ namespace MyApp.WebMvc03
                     .RequireAuthenticatedUser()
                     .Build();
             });
+
+            //This registers all the services across all the projects in this application
+            var diLogs = services.RegisterAssemblyPublicNonGenericClasses(
+                    Assembly.GetAssembly(typeof(IRoleService)),
+                    Assembly.GetAssembly(typeof(IUserRoleService)),
+                    Assembly.GetAssembly(typeof(ICourseService))
+                )
+                .AsPublicImplementedInterfaces();
 
         }
 

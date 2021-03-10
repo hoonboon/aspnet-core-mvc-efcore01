@@ -19,16 +19,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="3.1.11" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
+    <PackageReference Include="NetCore.AutoRegisterDi" Version="2.1.0" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MyApp.Admin.Security\MyApp.Admin.Security.csproj" />
     <ProjectReference Include="..\MyApp.School\MyApp.School.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>
