@@ -1,33 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using MyApp.WebMvc03.Data;
-using MyApp.WebMvc03.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
-using MyApp.School.Public.Data;
-using MyApp.School.Domains;
-using MyApp.School.Public.Services;
 using MyApp.School.Public.Dtos;
+using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Utils;
+using System;
+using System.Threading.Tasks;
 
 namespace MyApp.WebMvc03.Controllers.School
 {
     [Authorize(Roles = "Manager")]
     public class DepartmentsController : Controller
     {
-        private readonly SchoolDbContext _context;
         private readonly ILogger<DepartmentsController> _logger;
 
         private static readonly string _viewFolder = "/Views/School/Departments/";
 
-        public DepartmentsController(SchoolDbContext context, ILogger<DepartmentsController> logger)
+        public DepartmentsController(ILogger<DepartmentsController> logger)
         {
-            _context = context;
             _logger = logger;
         }
 

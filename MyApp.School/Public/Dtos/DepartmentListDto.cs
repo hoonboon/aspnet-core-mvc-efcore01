@@ -20,6 +20,6 @@ namespace MyApp.School.Public.Dtos
         public DateTime StartDate { get; set; }
 
         [Display(Name = "Administrator")]
-        public string? InstructorName { get; set; }
+        public string InstructorName { get; set; }
     }
 }
