@@ -8,7 +8,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Admin.Security", "MyA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.School", "MyApp.School\MyApp.School.csproj", "{3DB861DF-8091-4FEF-93FF-9CDCF09F4A7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyApp.Common", "MyApp.Common\MyApp.Common.csproj", "{47BAD67B-ADA0-417D-A7A4-E11D30898146}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyApp.Common", "MyApp.Common\MyApp.Common.csproj", "{47BAD67B-ADA0-417D-A7A4-E11D30898146}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

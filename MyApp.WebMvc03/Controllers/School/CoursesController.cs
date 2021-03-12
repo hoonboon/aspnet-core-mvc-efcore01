@@ -146,9 +146,14 @@ namespace MyApp.WebMvc03.Controllers.School
         // POST: Courses/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostDelete(int id, [FromServices] ICourseService service)
+        public async Task<IActionResult> PostDelete(int? id, [FromServices] ICourseService service)
         {
-            await service.DeleteCourseAndSaveAsync(id);
+            if (!id.HasValue)
+            {
+                return NotFound();
+            }
+
+            await service.DeleteCourseAndSaveAsync(id.Value);
             return RedirectToAction(nameof(Index));
         }
 

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<MyApp.School.Domains.Department>
+﻿@model IEnumerable<MyApp.School.Public.Dtos.DepartmentListDto>
 
 @{
     ViewData["Title"] = "Departments";
@@ -15,14 +15,14 @@
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
-            <th>
+            <th class="text-right">
                 @Html.DisplayNameFor(model => model.Budget)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.StartDate)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Administrator)
+                @Html.DisplayNameFor(model => model.InstructorName)
             </th>
             <th></th>
         </tr>
@@ -33,14 +33,14 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
-            <td>
+            <td class="text-right">
                 @Html.DisplayFor(modelItem => item.Budget)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.StartDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Administrator.FullName)
+                @Html.DisplayFor(modelItem => item.InstructorName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.DepartmentId">Edit</a> |

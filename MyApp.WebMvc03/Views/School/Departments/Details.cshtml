@@ -1,4 +1,4 @@
-﻿@model MyApp.School.Domains.Department
+﻿@model MyApp.School.Public.Dtos.DepartmentDetailDto
 
 @{
     ViewData["Title"] = "Details";
@@ -29,10 +29,10 @@
             @Html.DisplayFor(model => model.StartDate)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Administrator)
+            @Html.DisplayNameFor(model => model.InstructorName)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Administrator.FullName)
+            @Html.DisplayFor(model => model.InstructorName)
         </dd>
     </dl>
 </div>

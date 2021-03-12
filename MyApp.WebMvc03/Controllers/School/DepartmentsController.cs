@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using MyApp.School.Public.Data;
 using MyApp.School.Domains;
+using MyApp.School.Public.Services;
+using MyApp.School.Public.Dtos;
+using MyApp.WebMvc03.Utils;
 
 namespace MyApp.WebMvc03.Controllers.School
 {
@@ -29,24 +32,21 @@ namespace MyApp.WebMvc03.Controllers.School
         }
 
         // GET: Departments
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            [FromServices] IDepartmentService service)
         {
-            var schoolContext = _context.Departments.Include(d => d.Administrator);
-            return View($"{_viewFolder}Index.cshtml", await schoolContext.ToListAsync());
+            return View($"{_viewFolder}Index.cshtml", await service.ListAllDepartmentsAsync());
         }
 
         // GET: Departments/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, [FromServices] IDepartmentService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var department = await _context.Departments
-                .Include(d => d.Administrator)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.DepartmentId == id);
+            var department = await service.GetDepartmentByIdForDetailAsync(id.Value);
             if (department == null)
             {
                 return NotFound();
@@ -55,10 +55,18 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Details.cshtml", department);
         }
 
-        // GET: Departments/Create
-        public IActionResult Create()
+        private async Task PopulateInstructorsDropDownListAsync(IDepartmentService service, object selectedInstructor = null)
         {
-            ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName");
+            ViewBag.InstructorOptions = new SelectList(
+                await service.ListAllInstructorOptionsAsync(),
+                "InstructorId", "InstructorName",
+                selectedInstructor);
+        }
+
+        // GET: Departments/Create
+        public async Task<IActionResult> Create([FromServices] IDepartmentService service)
+        {
+            await PopulateInstructorsDropDownListAsync(service);
             return View($"{_viewFolder}Create.cshtml");
         }
 
@@ -67,35 +75,33 @@ namespace MyApp.WebMvc03.Controllers.School
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DepartmentId,Name,Budget,StartDate,InstructorId,RowVersion")] Department department)
+        public async Task<IActionResult> Create(
+            DepartmentAddEditDto department, [FromServices] IDepartmentService service)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(department);
-                await _context.SaveChangesAsync();
+                await service.CreateDepartmentAndSaveAsync(department);
+                TempData["Message"] = Constants.SUCCESS_MESSAGE;
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName", department.InstructorId);
+            await PopulateInstructorsDropDownListAsync(service, department.InstructorId);
             return View($"{_viewFolder}Create.cshtml", department);
         }
 
         // GET: Departments/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id, [FromServices] IDepartmentService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var department = await _context.Departments
-                .Include(d => d.Administrator)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(d => d.DepartmentId == id);
+            var department = await service.GetDepartmentByIdForEditAsync(id.Value);
             if (department == null)
             {
                 return NotFound();
             }
-            ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName", department.InstructorId);
+            await PopulateInstructorsDropDownListAsync(service, department.InstructorId);
             return View($"{_viewFolder}Edit.cshtml", department);
         }
 
@@ -104,122 +110,58 @@ namespace MyApp.WebMvc03.Controllers.School
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int? id, byte[] rowVersion)
+        public async Task<IActionResult> Edit(
+            int? id, byte[] rowVersion, DepartmentAddEditDto department, [FromServices] IDepartmentService service)
         {
-            if (id == null)
+            if (!id.HasValue 
+                || id.Value != department.DepartmentId)
             {
                 return NotFound();
             }
 
-            var departmentToUpdate = await _context.Departments
-                .Include(d => d.Administrator)
-                .FirstOrDefaultAsync(d => d.DepartmentId == id);
-
-            if (departmentToUpdate == null)
-            {
-                Department deletedDepartment = new Department();
-                await TryUpdateModelAsync(deletedDepartment);
-                ModelState.AddModelError(
-                    string.Empty, 
-                    "Unable to save changes. The department was deleted by another user.");
-                ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName", deletedDepartment.InstructorId);
-            }
-
-            _context.Entry(departmentToUpdate).Property("RowVersion").OriginalValue = rowVersion;
-
-            var isUpdateable = await TryUpdateModelAsync(
-                departmentToUpdate, "",
-                s => s.Name, s => s.StartDate, s => s.Budget, s => s.InstructorId);
-
-            if (isUpdateable)
+            if (ModelState.IsValid)
             {
                 try
                 {
-                    await _context.SaveChangesAsync();
+                    await service.UpdateDepartmentAndSaveAsync(department, rowVersion);
+                    TempData["Message"] = Constants.SUCCESS_MESSAGE;
                     return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException ex)
+                catch (Exception ex)
                 {
-                    var exceptionEntry = ex.Entries.Single();
-                    var userValues = (Department)exceptionEntry.Entity;
-                    var dbEntry = exceptionEntry.GetDatabaseValues();
-                    if (dbEntry == null)
-                    {
-                        ModelState.AddModelError(
-                            string.Empty, 
-                            "Unable to save changes. The department was deleted by another user.");
-                    }
-                    else
-                    {
-                        var dbValues = (Department)dbEntry.ToObject();
-
-                        if (dbValues.Name != userValues.Name)
-                        {
-                            ModelState.AddModelError("Name", $"Current value: {dbValues.Name}");
-                        }
-                        if (dbValues.Budget != userValues.Budget)
-                        {
-                            ModelState.AddModelError("Budget", $"Current value: {dbValues.Budget:c}");
-                        }
-                        if (dbValues.StartDate != userValues.StartDate)
-                        {
-                            ModelState.AddModelError("StartDate", $"Current value: {dbValues.StartDate:d}");
-                        }
-                        if (dbValues.InstructorId != userValues.InstructorId)
-                        {
-                            Instructor dbInstructor = await _context.Instructors
-                                .FirstOrDefaultAsync(i => i.InstructorId == dbValues.InstructorId);
-                            ModelState.AddModelError("InstructorId", $"Current value: {dbInstructor?.FullName}");
-                        }
-
-                        ModelState.AddModelError(
-                            string.Empty, 
-                            "The record you attempted to edit "
-                            + "was modified by another user after you got the original value. The "
-                            + "edit operation was canceled and the current values in the database "
-                            + "have been displayed. If you still intend to edit this record, click "
-                            + "the Save button again. Otherwise click the Back to List hyperlink.");
-                        departmentToUpdate.RowVersion = (byte[])dbValues.RowVersion;
-                        ModelState.Remove("RowVersion");
-                    }
+                    ViewBag.HasError = true;
+                    ViewBag.Message = ex.Message;
+                    ModelState.Remove("RowVersion");
                 }
             }
 
-            ViewData["InstructorId"] = new SelectList(_context.Instructors, "InstructorId", "FullName", departmentToUpdate.InstructorId);
-            return View($"{_viewFolder}Edit.cshtml", departmentToUpdate);
+            await PopulateInstructorsDropDownListAsync(service, department.InstructorId);
+            return View($"{_viewFolder}Edit.cshtml", department);
         }
 
         // GET: Departments/Delete/5
-        public async Task<IActionResult> Delete(int? id, bool? hasConcurrencyError)
+        public async Task<IActionResult> Delete(
+            int? id, [FromServices] IDepartmentService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var department = await _context.Departments
-                .Include(d => d.Administrator)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.DepartmentId == id);
+            var hasPreviousError = TempData["HasError"] != null && Convert.ToBoolean(TempData["HasError"]);
+            var message = Convert.ToString(TempData["Message"]);
+
+            var department = await service.GetDepartmentByIdForDetailAsync(id.Value);
             if (department == null)
             {
-                // deleted by another user
-                if (hasConcurrencyError.GetValueOrDefault())
+                // deleted by another user in previous delete request
+                if (hasPreviousError)
                 {
+                    TempData["Message"] = message;
+                    TempData["HasError"] = hasPreviousError;
                     return RedirectToAction(nameof(Index));
                 }
-                return NotFound();
-            }
-
-            if (hasConcurrencyError.GetValueOrDefault())
-            {
-                ViewData["ConcurrencyErrorMsg"] =
-                    "The record you attempted to delete "
-                    + "was modified by another user after you got the original values. "
-                    + "The delete operation was canceled and the current values in the "
-                    + "database is being displayed. If you still intend to delete this "
-                    + "record, click the Delete button again. Otherwise "
-                    + "click the Back to List hyperlink.";
+                return NotFound(); // new delete request
             }
 
             return View($"{_viewFolder}Delete.cshtml", department);
@@ -228,27 +170,27 @@ namespace MyApp.WebMvc03.Controllers.School
         // POST: Departments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Department department)
+        public async Task<IActionResult> DeleteConfirmed(
+            int? id, byte[] rowVersion, [FromServices] IDepartmentService service)
         {
+            if (!id.HasValue)
+            {
+                return NotFound();
+            }
+
             try
             {
-                if (await _context.Departments.AnyAsync(d => d.DepartmentId == department.DepartmentId))
-                {
-                    _context.Departments.Remove(department);
-                    await _context.SaveChangesAsync();
-                }
+                await service.DeleteDepartmentAndSaveAsync(id.Value, rowVersion);
+                TempData["Message"] = Constants.SUCCESS_MESSAGE;
                 return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to delete Department: id={id}", department.DepartmentId);
-                return RedirectToAction(nameof(Delete), new { hasConcurrencyError = true, id = department.DepartmentId });
+                TempData["Message"] = ex.Message;
+                TempData["HasError"] = true;
+                return RedirectToAction(nameof(Delete), new { id = id.Value });
             }
         }
 
-        private bool DepartmentExists(int id)
-        {
-            return _context.Departments.Any(e => e.DepartmentId == id);
-        }
     }
 }

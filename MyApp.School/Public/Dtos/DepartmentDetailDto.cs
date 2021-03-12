@@ -1,31 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 
-namespace MyApp.School.Domains
+namespace MyApp.School.Public.Dtos
 {
-    public class Department
+    public class DepartmentDetailDto
     {
         public int DepartmentId { get; set; }
 
         [StringLength(50, MinimumLength = 3)]
         public string Name { get; set; }
 
-        [DataType(DataType.Currency)]
-        [Column(TypeName = "money")]
+        [DisplayFormat(DataFormatString = "{0:#,0.00}", ApplyFormatInEditMode = true)]
         public decimal Budget { get; set; }
 
-        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
+        [Display(Name = "Start Date")]
         public DateTime StartDate { get; set; }
 
-        public int? InstructorId { get; set; }
+        [Display(Name = "Administrator")]
+        public string? InstructorName { get; set; }
 
         [Timestamp]
         public byte[] RowVersion { get; set; }
 
-        public Instructor Administrator { get; set; }
-        public ICollection<Course> Courses { get; set; }
     }
-
 }

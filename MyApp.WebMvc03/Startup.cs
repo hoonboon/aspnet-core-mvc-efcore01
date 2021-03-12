@@ -101,7 +101,8 @@ namespace MyApp.WebMvc03
             var diLogs = services.RegisterAssemblyPublicNonGenericClasses(
                     Assembly.GetAssembly(typeof(IRoleService)),
                     Assembly.GetAssembly(typeof(IUserRoleService)),
-                    Assembly.GetAssembly(typeof(ICourseService))
+                    Assembly.GetAssembly(typeof(ICourseService)),
+                    Assembly.GetAssembly(typeof(IDepartmentService))
                 )
                 .AsPublicImplementedInterfaces();
 
