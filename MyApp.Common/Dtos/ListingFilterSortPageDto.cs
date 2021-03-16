@@ -42,9 +42,9 @@ namespace MyApp.Common.Dtos
 
     public enum PageSizeOptions
     {
-        [Display(Name = "10 Rows Per Page")] _10 = 10,
-        [Display(Name = "20 Rows Per Page")] _20 = 20,
-        [Display(Name = "50 Rows Per Page")] _50 = 50,
-        [Display(Name = "100 Rows Per Page")] _100 = 100
+        [Display(Name = "10")] _10 = 10,
+        [Display(Name = "20")] _20 = 20,
+        [Display(Name = "50")] _50 = 50,
+        [Display(Name = "100")] _100 = 100
     }
 }
