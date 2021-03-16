@@ -2,10 +2,15 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyApp.Common.Dtos;
 using MyApp.School.Domains;
+using MyApp.School.Efcore;
 using MyApp.School.Public.Data;
+using MyApp.School.Public.Dtos;
 using MyApp.WebMvc03.Utils;
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -27,56 +32,86 @@ namespace MyApp.WebMvc03.Controllers.School
 
         // GET: Students
         public async Task<IActionResult> Index(
-            string sortOrder, string searchStringCurrent, string searchStringNext, int? pageNumber)
+            ListingFilterSortPageDto filterSortPageDto)
         {
-            var students = from s in _context.Students
-                           select s;
+            // call this first to:
+            // - reset the PageNo by comparing the previous an current listing criteria
+            filterSortPageDto.InitDto();
 
-            // Search
-            if (!String.IsNullOrWhiteSpace(searchStringNext))
-            {
-                pageNumber = 1;
-            }
-            else
-            {
-                searchStringNext = searchStringCurrent;
-            }
+            var students = _context.Students
+                .Select(s => new StudentListItem
+                {
+                    FirstMidName = s.FirstMidName,
+                    LastName = s.LastName,
+                    EnrollmentDate = s.EnrollmentDate,
+                    StudentId = s.StudentId
+                });
 
-            ViewData["CurrentSearchString"] = searchStringNext;
-
-            if (!String.IsNullOrWhiteSpace(searchStringNext))
+            StudentsFilterOptions filterBy = (StudentsFilterOptions)filterSortPageDto.FilterBy;
+            var filterValue = filterSortPageDto.FilterValue;
+            if (filterBy > 0 && !String.IsNullOrWhiteSpace(filterValue))
             {
-                students = students.Where(s => (s.LastName.Contains(searchStringNext) || s.FirstMidName.Contains(searchStringNext)));
+                switch (filterBy)
+                {
+                    case StudentsFilterOptions.FirstMidName:
+                        students = students.Where(s => (s.FirstMidName.Contains(filterValue)));
+                        break;
+                    case StudentsFilterOptions.LastName:
+                        students = students.Where(s => (s.LastName.Contains(filterValue)));
+                        break;
+                    case StudentsFilterOptions.EnrollmentDateAfter:
+                        try
+                        {
+                            DateTime filterValueDate = DateTime.ParseExact(filterValue, "yyyy-MM-dd", CultureInfo.CurrentCulture);
+                            students = students.Where(s => (s.EnrollmentDate >= filterValueDate));
+                        }
+                        catch (Exception)
+                        {
+                            // TODO: handle error
+                        }
+                        break;
+                    case StudentsFilterOptions.EnrollmentDateBefore:
+                        try
+                        {
+                            DateTime filterValueDate = DateTime.ParseExact(filterValue, "yyyy-MM-dd", CultureInfo.CurrentCulture);
+                            students = students.Where(s => (s.EnrollmentDate <= filterValueDate));
+                        }
+                        catch (Exception)
+                        {
+                            // TODO: handle error
+                        }
+                        break;
+                }
+                
             }
 
             // Order By
-            if (String.IsNullOrWhiteSpace(sortOrder))
+            StudentsSortByOptions sortBy = (StudentsSortByOptions) filterSortPageDto.SortBy;
+            bool sortAscending = filterSortPageDto.SortAscending;
+            if (sortAscending)
             {
-                sortOrder = "LastName";
-            }
-
-            ViewData["SortOrder"] = sortOrder;
-            ViewData["NextSortLname"] = sortOrder == "LastName" ? "LastName_desc" : "LastName";
-            ViewData["NextSortFname"] = sortOrder == "FirstMidName" ? "FirstMidName_desc" : "FirstMidName";
-            ViewData["NextSortDate"] = sortOrder == "EnrollmentDate" ? "EnrollmentDate_desc" : "EnrollmentDate";
-
-            bool descending = false;
-            if (sortOrder.EndsWith("_desc"))
-            {
-                sortOrder = sortOrder.Substring(0, sortOrder.Length - 5);
-                descending = true;
-            }
-
-            if (descending)
-            {
-                students = students.OrderByDescending(e => EF.Property<object>(e, sortOrder));
+                students = students.OrderBy(e => EF.Property<object>(e, sortBy.ToString()));
             }
             else
             {
-                students = students.OrderBy(e => EF.Property<object>(e, sortOrder));
+                students = students.OrderByDescending(e => EF.Property<object>(e, sortBy.ToString())); 
             }
 
-            return View($"{_viewFolder}Index.cshtml", await PaginatedList<Student>.CreateAsync(students.AsNoTracking(), pageNumber ?? 1));
+            PageSizeOptions pageSize = (PageSizeOptions) filterSortPageDto.PageSize;
+            var pageIndex = filterSortPageDto.PageIndex;
+
+            var paginatedList = await PaginatedListHelper<StudentListItem>.CreateAsync(students.AsNoTracking(), pageIndex, (int) pageSize);
+
+            // set the final page index based on the latest database records available
+            filterSortPageDto.PageIndex = paginatedList.PageIndex;
+
+            var studentListDto = new StudentListDto
+            {
+                FilterSortPageValues = filterSortPageDto,
+                Listing = paginatedList
+            };
+
+            return View($"{_viewFolder}Index.cshtml", studentListDto);
         }
 
         // GET: Students/Details/5
@@ -253,7 +288,7 @@ namespace MyApp.WebMvc03.Controllers.School
                 catch (DbUpdateException)
                 {
                     //_logger.LogError(ex, "Failed to delete Student: id={id}", id);
-                    return RedirectToAction(nameof(Delete), new { id = id, deleteConfirmedError = true });
+                    return RedirectToAction(nameof(Delete), new { id, deleteConfirmedError = true });
                 }
             }
 
