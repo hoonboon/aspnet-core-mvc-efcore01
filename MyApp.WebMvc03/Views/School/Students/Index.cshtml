@@ -42,30 +42,31 @@
         </div>
     </div>
 
-    <table class="table table-sm">
-        <thead>
-            <tr>
-                <th>
-                    <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.LastName));">
-                        Last Name
-                    </a>
-                </th>
-                <th>
-                    <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.FirstMidName));">
-                        First Name
-                    </a>
-                </th>
-                <th>
-                    <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.EnrollmentDate));">
-                        Enrollment Date
-                    </a>
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Listing)
-            {
+    <div>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.LastName));">
+                            Last Name
+                        </a>
+                    </th>
+                    <th>
+                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.FirstMidName));">
+                            First Name
+                        </a>
+                    </th>
+                    <th>
+                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.EnrollmentDate));">
+                            Enrollment Date
+                        </a>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Listing)
+                {
                 <tr>
                     <td>
                         @Html.DisplayFor(modelItem => item.LastName)
@@ -73,18 +74,19 @@
                     <td>
                         @Html.DisplayFor(modelItem => item.FirstMidName)
                     </td>
-                    <td>
+                    <td class="text-nowrap">
                         @Html.DisplayFor(modelItem => item.EnrollmentDate)
                     </td>
-                    <td>
+                    <td class="text-nowrap">
                         <a asp-action="Edit" asp-route-id="@item.StudentId">Edit</a> |
                         <a asp-action="Details" asp-route-id="@item.StudentId">Details</a> |
                         <a asp-action="Delete" asp-route-id="@item.StudentId">Delete</a>
                     </td>
                 </tr>
-            }
-        </tbody>
-    </table>
+                }
+            </tbody>
+        </table>
+    </div>
 
     @{
         var prevDisabled = Model.Listing.HasPreviousPage ? "" : "disabled";
@@ -104,18 +106,19 @@
         <div class="text-center font-weight-bold col-sm-4 mb-2 mt-2">
             Page @Model.Listing.PageIndex of @Model.Listing.TotalPages
         </div>
-        <div class="text-center font-weight-bold col-sm-3 offset-sm-1">
+        <div class="font-weight-bold col-sm-4">
             <div class="row">
-                <div class="col-md-5 col-sm-12 col-5">
+                <div class="col-auto">
                     <select asp-for="FilterSortPageValues.PageSize" id="PageSize" name="PageSize"
                             asp-items="Html.GetEnumSelectList<PageSizeOptions>()"
                             class="form-control m-0"
                             onchange="javascript: StudentList.submitForm();"></select>
                 </div>
-                <div class="col-md-7 col-sm-12 col-7">
+                <div class="col-auto">
                     Rows Per Page
                 </div>
             </div>
+        </div>
     </div>
 
 </form>

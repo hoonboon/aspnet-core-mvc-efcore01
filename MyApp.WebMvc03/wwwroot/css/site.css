@@ -73,3 +73,9 @@ body {
 a.sortable:hover {
     cursor: pointer;
 }
+
+.table thead th {
+    color: #000;
+    background-color: #ccc;
+    border-color: #aaa;
+}
