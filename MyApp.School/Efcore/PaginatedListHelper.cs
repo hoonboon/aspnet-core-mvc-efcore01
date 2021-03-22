@@ -12,14 +12,21 @@ namespace MyApp.School.Efcore
         public static async Task<PaginatedListDto<T>> CreateAsync(
             IQueryable<T> source, int pageIndex, int pageSize)
         {
+            var totalPages = 1;
+            var finalPageIndex = 1;
+            IEnumerable<T> items = null;
+
             var rowCount = await source.CountAsync();
+            if (rowCount > 0)
+            {
+                totalPages = (int)Math.Ceiling(rowCount / (double)pageSize);
 
-            var totalPages = (int)Math.Ceiling(rowCount / (double)pageSize);
+                // to ensure that the max pageIndex allowed is always = totalPages
+                finalPageIndex = Math.Min(Math.Max(1, pageIndex), totalPages);
 
-            // to ensure that the max pageIndex allowed is always = totalPages
-            var finalPageIndex = Math.Min(Math.Max(1, pageIndex), totalPages);
-
-            var items = await source.Skip((finalPageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+                items = await source.Skip((finalPageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+            }
+            
             return new PaginatedListDto<T>(items, finalPageIndex, totalPages);
         }
 

@@ -17,7 +17,7 @@ namespace MyApp.Common.Dtos
 
         public bool SortAscending { get; set; } = true;
 
-        public int PageIndex { get; set; }
+        public int PageIndex { get; set; } = 1;
 
         public int PageSize { get; set; } = ListingFilterSortPageDto.DEFAULT_PAGE_SIZE;
 

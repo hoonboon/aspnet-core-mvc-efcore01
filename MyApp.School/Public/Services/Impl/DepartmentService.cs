@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using MyApp.Common.Exceptions;
 using MyApp.School.Domains;
 using MyApp.School.Public.Data;
 using MyApp.School.Public.Dtos;
@@ -82,9 +83,9 @@ namespace MyApp.School.Public.Services.Impl
                 });
                 result = await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create new Department: {dto}");
+                _logger.LogError(ex, $"Failed to create new Department: {dto}");
                 throw ex;
             }
 
@@ -120,7 +121,7 @@ namespace MyApp.School.Public.Services.Impl
                 {
                     var errMsg = $"Record does not exist or has been deleted for DepartmentId={dto.DepartmentId}";
                     _logger.LogError("", errMsg);
-                    throw new Exception(errMsg);
+                    throw new GeneralException(errMsg);
                 }
 
                 _context.Entry(departmentToUpdate).Property("RowVersion").OriginalValue = rowVersion;
@@ -144,7 +145,7 @@ namespace MyApp.School.Public.Services.Impl
                 if (dbEntry == null)
                 {
                     errMsg = "Unable to save changes. The department was deleted by another user.";
-                    throw new Exception(errMsg);
+                    throw new GeneralException(errMsg);
                 }
                 else
                 {
@@ -178,10 +179,10 @@ namespace MyApp.School.Public.Services.Impl
                     
                     dto.RowVersion = (byte[])dbValues.RowVersion;
                     
-                    throw new Exception(errMsg);
+                    throw new GeneralException(errMsg);
                 }
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to update Department: {dto}");
                 throw ex;
@@ -202,7 +203,7 @@ namespace MyApp.School.Public.Services.Impl
                 {
                     var errMsg = $"Record does not exist for DepartmentId={departmentId}";
                     _logger.LogError("", errMsg);
-                    throw new Exception(errMsg);
+                    throw new GeneralException(errMsg);
                 }
 
                 _context.Entry(departmentToDelete).Property("RowVersion").OriginalValue = rowVersion;
@@ -221,9 +222,9 @@ namespace MyApp.School.Public.Services.Impl
                     + "database is being displayed. If you still intend to delete this "
                     + "record, click the Delete button again. Otherwise "
                     + "click the Back to List hyperlink.";
-                throw new Exception(errMsg);
+                throw new GeneralException(errMsg);
             }
-            catch (DbUpdateException ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to delete DepartmentId: {departmentId}");
                 throw ex;

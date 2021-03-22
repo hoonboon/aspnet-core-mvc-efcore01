@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using MyApp.Common.Exceptions;
 using MyApp.School.Public.Dtos;
 using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Utils;
@@ -71,9 +72,17 @@ namespace MyApp.WebMvc03.Controllers.School
         {
             if (ModelState.IsValid)
             {
-                await service.CreateDepartmentAndSaveAsync(department);
-                TempData["Message"] = Constants.SUCCESS_MESSAGE;
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await service.CreateDepartmentAndSaveAsync(department);
+                    TempData["Message"] = Constants.SUCCESS_MESSAGE;
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ViewBag.HasError = true;
+                    ViewBag.Message = ex.Message;
+                }
             }
             await PopulateInstructorsDropDownListAsync(service, department.InstructorId);
             return View($"{_viewFolder}Create.cshtml", department);
@@ -118,10 +127,16 @@ namespace MyApp.WebMvc03.Controllers.School
                     TempData["Message"] = Constants.SUCCESS_MESSAGE;
                     return RedirectToAction(nameof(Index));
                 }
-                catch (Exception ex)
+                catch (GeneralException ex)
                 {
                     ViewBag.HasError = true;
                     ViewBag.Message = ex.Message;
+                    ModelState.Remove("RowVersion");
+                }
+                catch (Exception ex)
+                {
+                    ViewBag.HasError = true;
+                    ViewBag.Message = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
                     ModelState.Remove("RowVersion");
                 }
             }
@@ -175,9 +190,15 @@ namespace MyApp.WebMvc03.Controllers.School
                 TempData["Message"] = Constants.SUCCESS_MESSAGE;
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch (GeneralException ex)
             {
                 TempData["Message"] = ex.Message;
+                TempData["HasError"] = true;
+                return RedirectToAction(nameof(Delete), new { id = id.Value });
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
                 TempData["HasError"] = true;
                 return RedirectToAction(nameof(Delete), new { id = id.Value });
             }

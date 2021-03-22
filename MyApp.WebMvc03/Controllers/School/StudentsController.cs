@@ -1,17 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyApp.Common.Dtos;
-using MyApp.School.Domains;
-using MyApp.School.Efcore;
-using MyApp.School.Public.Data;
+using MyApp.Common.Exceptions;
 using MyApp.School.Public.Dtos;
+using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Utils;
 using System;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyApp.WebMvc03.Controllers.School
@@ -19,91 +14,40 @@ namespace MyApp.WebMvc03.Controllers.School
     [Authorize(Roles = "Staff")]
     public class StudentsController : Controller
     {
-        private readonly SchoolDbContext _context;
         private readonly ILogger<StudentsController> _logger;
 
         private static readonly string _viewFolder = "/Views/School/Students/";
 
-        public StudentsController(SchoolDbContext context, ILogger<StudentsController> logger)
+        public StudentsController(ILogger<StudentsController> logger)
         {
-            _context = context;
             _logger = logger;
         }
 
         // GET: Students
         public async Task<IActionResult> Index(
-            ListingFilterSortPageDto filterSortPageDto)
+            ListingFilterSortPageDto filterSortPageDto, [FromServices] IStudentService service)
         {
-            // call this first to:
-            // - reset the PageNo by comparing the previous an current listing criteria
-            filterSortPageDto.InitDto();
+            PaginatedListDto<StudentListItem> paginatedList = null;
 
-            var students = _context.Students
-                .Select(s => new StudentListItem
-                {
-                    FirstMidName = s.FirstMidName,
-                    LastName = s.LastName,
-                    EnrollmentDate = s.EnrollmentDate,
-                    StudentId = s.StudentId
-                });
-
-            StudentsFilterOptions filterBy = (StudentsFilterOptions)filterSortPageDto.FilterBy;
-            var filterValue = filterSortPageDto.FilterValue;
-            if (filterBy > 0 && !String.IsNullOrWhiteSpace(filterValue))
+            try
             {
-                switch (filterBy)
-                {
-                    case StudentsFilterOptions.FirstMidName:
-                        students = students.Where(s => (s.FirstMidName.Contains(filterValue)));
-                        break;
-                    case StudentsFilterOptions.LastName:
-                        students = students.Where(s => (s.LastName.Contains(filterValue)));
-                        break;
-                    case StudentsFilterOptions.EnrollmentDateAfter:
-                        try
-                        {
-                            DateTime filterValueDate = DateTime.ParseExact(filterValue, "yyyy-MM-dd", CultureInfo.CurrentCulture);
-                            students = students.Where(s => (s.EnrollmentDate >= filterValueDate));
-                        }
-                        catch (Exception)
-                        {
-                            // TODO: handle error
-                        }
-                        break;
-                    case StudentsFilterOptions.EnrollmentDateBefore:
-                        try
-                        {
-                            DateTime filterValueDate = DateTime.ParseExact(filterValue, "yyyy-MM-dd", CultureInfo.CurrentCulture);
-                            students = students.Where(s => (s.EnrollmentDate <= filterValueDate));
-                        }
-                        catch (Exception)
-                        {
-                            // TODO: handle error
-                        }
-                        break;
-                }
-                
-            }
+                paginatedList = await service.ListAllStudentssAsync(filterSortPageDto);
 
-            // Order By
-            StudentsSortByOptions sortBy = (StudentsSortByOptions) filterSortPageDto.SortBy;
-            bool sortAscending = filterSortPageDto.SortAscending;
-            if (sortAscending)
+                // set the final page index based on the latest database records available
+                filterSortPageDto.PageIndex = paginatedList.PageIndex;
+            }
+            catch (GeneralException ex)
             {
-                students = students.OrderBy(e => EF.Property<object>(e, sortBy.ToString()));
+                _logger.LogError("GeneralException in Index: " + ex.Message);
+                ViewBag.HasError = true;
+                ViewBag.Message = ex.Message;
             }
-            else
+            catch (Exception ex)
             {
-                students = students.OrderByDescending(e => EF.Property<object>(e, sortBy.ToString())); 
+                _logger.LogError("Exception in Index: " + ex.Message);
+                ViewBag.HasError = true;
+                ViewBag.Message = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
             }
-
-            PageSizeOptions pageSize = (PageSizeOptions) filterSortPageDto.PageSize;
-            var pageIndex = filterSortPageDto.PageIndex;
-
-            var paginatedList = await PaginatedListHelper<StudentListItem>.CreateAsync(students.AsNoTracking(), pageIndex, (int) pageSize);
-
-            // set the final page index based on the latest database records available
-            filterSortPageDto.PageIndex = paginatedList.PageIndex;
 
             var studentListDto = new StudentListDto
             {
@@ -115,17 +59,14 @@ namespace MyApp.WebMvc03.Controllers.School
         }
 
         // GET: Students/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, [FromServices] IStudentService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var student = await _context.Students
-                .Include(s => s.Enrollments).ThenInclude(e => e.Course)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.StudentId == id);
+            var student = await service.GetStudentByIdForDetailAsync(id.Value);
             if (student == null)
             {
                 return NotFound();
@@ -145,34 +86,37 @@ namespace MyApp.WebMvc03.Controllers.School
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("LastName,FirstMidName,EnrollmentDate")] Student student)
+        public async Task<IActionResult> Create(
+            StudentAddEditDto student, [FromServices] IStudentService service)
         {
-            try
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
+                try
                 {
-                    _context.Add(student);
-                    await _context.SaveChangesAsync();
+                    await service.CreateStudentAndSaveAsync(student);
+                    TempData["Message"] = Constants.SUCCESS_MESSAGE;
                     return RedirectToAction(nameof(Index));
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error in Create: " + ex.Message);
+                    ViewBag.HasError = true;
+                    ViewBag.Message = Constants.ERROR_MESSAGE_SAVE + ": " + ex.Message;
+                }
             }
-            catch (DbUpdateException)
-            {
-                //_logger.LogError(ex, "Failed to create new Student: {Student}", student.ToString());
-                ModelState.AddModelError("", Constants.ERROR_MESSAGE_SAVE);
-            }
+
             return View($"{_viewFolder}Create.cshtml", student);
         }
 
         // GET: Students/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id, [FromServices] IStudentService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var student = await _context.Students.FindAsync(id);
+            var student = await service.GetStudentByIdForEditAsync(id.Value);
             if (student == null)
             {
                 return NotFound();
@@ -180,93 +124,63 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Edit.cshtml", student);
         }
 
-        // POST: Students/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(int id, [Bind("StudentId,LastName,FirstMidName,EnrollmentDate")] Student student)
-        //{
-        //    if (id != student.StudentId)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            _context.Update(student);
-        //            await _context.SaveChangesAsync();
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!StudentExists(student.StudentId))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    return View(student);
-        //}
-
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostEdit(int? id)
+        public async Task<IActionResult> PostEdit(
+            int? id, StudentAddEditDto studentDto, [FromServices] IStudentService service)
         {
-            if (id == null)
+            if (!id.HasValue
+                || id.Value != studentDto.StudentId)
             {
                 return NotFound();
             }
 
-            var studentDb = await _context.Students.FirstOrDefaultAsync(s => s.StudentId == id);
-            var isTrySucccess = await TryUpdateModelAsync<Student>(
-                    studentDb, "", 
-                    s => s.FirstMidName,
-                    s => s.LastName,
-                    s => s.EnrollmentDate
-                );
-            if (isTrySucccess)
+            if (ModelState.IsValid)
             {
                 try
                 {
-                    await _context.SaveChangesAsync();
+                    await service.UpdateStudentAndSaveAsync(studentDto);
+                    TempData["Message"] = Constants.SUCCESS_MESSAGE;
                     return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateException)
+                catch (GeneralException ex)
                 {
-                    //_logger.LogError(ex, "Failed to edit Student: id={id}", id);
-                    ModelState.AddModelError("", Constants.ERROR_MESSAGE_SAVE);
+                    ViewBag.HasError = true;
+                    ViewBag.Message = ex.Message;
+                }
+                catch (Exception ex)
+                {
+                    ViewBag.HasError = true;
+                    ViewBag.Message = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
                 }
             }
 
-            return View($"{_viewFolder}Edit.cshtml", studentDb);
+            return View($"{_viewFolder}Edit.cshtml", studentDto);
         }
 
         // GET: Students/Delete/5
-        public async Task<IActionResult> Delete(int? id, bool? deleteConfirmedError = false)
+        public async Task<IActionResult> Delete(
+            int? id, [FromServices] IStudentService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var student = await _context.Students
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.StudentId == id);
+            var hasPreviousError = TempData["HasError"] != null && Convert.ToBoolean(TempData["HasError"]);
+            var message = Convert.ToString(TempData["Message"]);
+
+            var student = await service.GetStudentByIdForDetailAsync(id.Value);
             if (student == null)
             {
-                return NotFound();
-            }
-
-            if (deleteConfirmedError.GetValueOrDefault())
-            {
-                ViewData["ErrorMessage"] = Constants.ERROR_MESSAGE_DELETE;
+                // deleted by another user in previous delete request
+                if (hasPreviousError)
+                {
+                    TempData["Message"] = message;
+                    TempData["HasError"] = hasPreviousError;
+                    return RedirectToAction(nameof(Index));
+                }
+                return NotFound(); // new delete request
             }
 
             return View($"{_viewFolder}Delete.cshtml", student);
@@ -275,29 +189,33 @@ namespace MyApp.WebMvc03.Controllers.School
         // POST: Students/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(
+            int? id, [FromServices] IStudentService service)
         {
-            var student = await _context.Students.FindAsync(id);
-            if (student != null)
+            if (!id.HasValue)
             {
-                try
-                {
-                    _context.Students.Remove(student);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException)
-                {
-                    //_logger.LogError(ex, "Failed to delete Student: id={id}", id);
-                    return RedirectToAction(nameof(Delete), new { id, deleteConfirmedError = true });
-                }
+                return NotFound();
             }
 
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await service.DeleteStudentAndSaveAsync(id.Value);
+                TempData["Message"] = Constants.SUCCESS_MESSAGE;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (GeneralException ex)
+            {
+                TempData["Message"] = ex.Message;
+                TempData["HasError"] = true;
+                return RedirectToAction(nameof(Delete), new { id = id.Value });
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
+                TempData["HasError"] = true;
+                return RedirectToAction(nameof(Delete), new { id = id.Value });
+            }
         }
 
-        //private bool StudentExists(int id)
-        //{
-        //    return _context.Students.Any(e => e.StudentId == id);
-        //}
     }
 }

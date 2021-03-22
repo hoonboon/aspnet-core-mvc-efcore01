@@ -19,6 +19,13 @@ var StudentList = (function ($) {
                 $('#FilterValue').attr('type', 'text');
                 $('#FilterValue').val('');
             }
+
+            if (filterBy == 0) {
+                $('#FilterValue').attr('readonly', true);
+                $('#FilterValue').val('');
+            } else {
+                $('#FilterValue').attr('readonly', false);
+            }
         },
 
         filterByHasChanged: function (filterElem) {

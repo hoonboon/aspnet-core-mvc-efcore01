@@ -12,7 +12,10 @@ namespace MyApp.Common.Dtos
             TotalPages = totalPages;
             PageIndex = pageIndex;
             
-            this.AddRange(items);
+            if (items != null)
+            {
+                this.AddRange(items);
+            }
         }
 
         public bool HasPreviousPage

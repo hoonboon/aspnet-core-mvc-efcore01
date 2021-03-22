@@ -1,4 +1,4 @@
-﻿@model MyApp.School.Domains.Student
+﻿@model MyApp.School.Public.Dtos.StudentAddEditDto
 
 @{
     ViewData["Title"] = "Edit";
@@ -9,24 +9,30 @@
 <h4>Student</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-12">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="StudentId" />
-            <div class="form-group">
-                <label asp-for="LastName" class="control-label"></label>
-                <input asp-for="LastName" class="form-control" />
-                <span asp-validation-for="LastName" class="text-danger"></span>
+            <div class="form-group row">
+                <label asp-for="LastName" class="col-sm-4 col-md-2 col-form-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FirstMidName" class="control-label"></label>
-                <input asp-for="FirstMidName" class="form-control" />
-                <span asp-validation-for="FirstMidName" class="text-danger"></span>
+            <div class="form-group row">
+                <label asp-for="FirstMidName" class="col-sm-4 col-md-2 col-form-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="FirstMidName" class="form-control" />
+                    <span asp-validation-for="FirstMidName" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="EnrollmentDate" class="control-label"></label>
-                <input asp-for="EnrollmentDate" class="form-control" />
-                <span asp-validation-for="EnrollmentDate" class="text-danger"></span>
+            <div class="form-group row">
+                <label asp-for="EnrollmentDate" class="col-sm-4 col-md-2 col-form-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="EnrollmentDate" class="form-control" />
+                    <span asp-validation-for="EnrollmentDate" class="text-danger"></span>
+                </div>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

@@ -27,8 +27,9 @@
                     onchange="javascript: StudentList.filterByHasChanged(this);"></select>
         </div>
         <div class="col-auto">
-            <input asp-for="FilterSortPageValues.FilterValue" id="FilterValue" name="FilterValue"
+            <input value="@Model.FilterSortPageValues.FilterValue" id="FilterValue" name="FilterValue"
                    type="@( (Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.EnrollmentDateAfter || Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.EnrollmentDateBefore) ? "date" : "text")"
+                   @(Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.NoFilter ? "readonly" : "")
                    class="form-control mb-2">
         </div>
         <div class="col-auto">
@@ -65,46 +66,73 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model.Listing)
+                @if (Model.Listing != null && Model.Listing.Any())
                 {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.LastName)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.FirstMidName)
-                    </td>
-                    <td class="text-nowrap">
-                        @Html.DisplayFor(modelItem => item.EnrollmentDate)
-                    </td>
-                    <td class="text-nowrap">
-                        <a asp-action="Edit" asp-route-id="@item.StudentId">Edit</a> |
-                        <a asp-action="Details" asp-route-id="@item.StudentId">Details</a> |
-                        <a asp-action="Delete" asp-route-id="@item.StudentId">Delete</a>
-                    </td>
-                </tr>
+                    @foreach (var item in Model.Listing)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LastName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.FirstMidName)
+                            </td>
+                            <td class="text-nowrap">
+                                @Html.DisplayFor(modelItem => item.EnrollmentDate)
+                            </td>
+                            <td class="text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@item.StudentId">Edit</a> |
+                                <a asp-action="Details" asp-route-id="@item.StudentId">Details</a> |
+                                <a asp-action="Delete" asp-route-id="@item.StudentId">Delete</a>
+                            </td>
+                        </tr>
+                    }
                 }
-            </tbody>
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center font-weight-bold text-danger">
+                            No Records
+                        </td>
+                    </tr>
+                }
+                </tbody>
         </table>
     </div>
 
     @{
-        var prevDisabled = Model.Listing.HasPreviousPage ? "" : "disabled";
-        var nextDisabled = Model.Listing.HasNextPage ? "" : "disabled";
+        var prevDisabled = "disabled";
+        var nextDisabled = "disabled";
+
+        var currentPageNo = 1;
+        var totalPages = 1;
+        var prevPageNo = 0;
+        var nextPageNo = 0;
+
+        if (Model.Listing != null)
+        {
+            prevDisabled = Model.Listing.HasPreviousPage ? "" : "disabled";
+            nextDisabled = Model.Listing.HasNextPage ? "" : "disabled";
+
+            currentPageNo = Model.Listing.PageIndex;
+            totalPages = @Model.Listing.TotalPages;
+            prevPageNo = currentPageNo - 1;
+            nextPageNo = currentPageNo + 1;
+        }
     }
     <div class="row">
         <div class="text-left col-sm-4">
             <a class="btn btn-primary @prevDisabled" href="#"
-               onclick="javascript: StudentList.submitGoToPage(@(Model.Listing.PageIndex - 1)); return false;">
+                onclick="javascript: StudentList.submitGoToPage(@prevPageNo); return false;">
                 Previous
             </a>
             <a class="btn btn-primary @nextDisabled" href="#"
-               onclick="javascript: StudentList.submitGoToPage(@(Model.Listing.PageIndex + 1)); return false;">
+                onclick="javascript: StudentList.submitGoToPage(@nextPageNo); return false;">
                 Next
             </a>
         </div>
         <div class="text-center font-weight-bold col-sm-4 mb-2 mt-2">
-            Page @Model.Listing.PageIndex of @Model.Listing.TotalPages
+            Page @currentPageNo of @totalPages
         </div>
         <div class="font-weight-bold col-sm-4">
             <div class="row">
