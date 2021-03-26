@@ -186,7 +186,7 @@ namespace MyApp.School.Public.Services.Impl
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to update Department: {dto}");
+                _logger.LogError(ex, $"Failed to update Student: {dto}");
                 throw ex;
             }
 

@@ -21,5 +21,6 @@ namespace MyApp.WebMvc03.Utils
                     + " Please try again."
                     + " If the problem persists, please contact the system administrator.";
 
+        public static readonly string NO_RECORD = "No record.";
     }
 }

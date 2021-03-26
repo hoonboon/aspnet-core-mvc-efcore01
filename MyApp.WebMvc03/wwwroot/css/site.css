@@ -79,3 +79,7 @@ a.sortable:hover {
     background-color: #ccc;
     border-color: #aaa;
 }
+
+.control-label {
+    font-weight: bold;
+}

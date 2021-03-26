@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MyApp.School.Domains;
-using MyApp.School.Public.Data;
+using MyApp.Common.Exceptions;
 using MyApp.School.Public.Dtos;
+using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Utils;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyApp.WebMvc03.Controllers.School
@@ -15,65 +14,54 @@ namespace MyApp.WebMvc03.Controllers.School
     [Authorize(Roles = "Manager")]
     public class InstructorsController : Controller
     {
-        private readonly SchoolDbContext _context;
         private readonly ILogger<InstructorsController> _logger;
 
         private static readonly string _viewFolder = "/Views/School/Instructors/";
 
-        public InstructorsController(SchoolDbContext context, ILogger<InstructorsController> logger)
+        public InstructorsController(ILogger<InstructorsController> logger)
         {
-            _context = context;
             _logger = logger;
         }
 
         // GET: Instructors
-        public async Task<IActionResult> Index(int? id, int? courseId)
+        public async Task<IActionResult> Index(int? id, int? courseId, [FromServices] IInstructorService service)
         {
-            var viewModel = new InstructorIndexData();
-            viewModel.Instructors = await _context.Instructors
-                .Include(i => i.OfficeAssignment)
-                .Include(i => i.CourseAssignments)
-                    .ThenInclude(ca => ca.Course)
-                        .ThenInclude(c => c.Enrollments)
-                            .ThenInclude(e => e.Student)
-                .Include(i => i.CourseAssignments)
-                    .ThenInclude(ca => ca.Course)
-                        .ThenInclude(c => c.Department)
-                .AsNoTracking()
-                .OrderBy(i => i.LastName)
-                .ToListAsync();
-
-            if (id != null)
+            var viewModel = new InstructorListDto();
+            try
             {
-                ViewData["InstructorId"] = id.Value;
-                Instructor instructor = viewModel.Instructors.Where(
-                        i => i.InstructorId == id.Value
-                    ).Single();
-                viewModel.Courses = instructor.CourseAssignments.Select(s => s.Course);
+                viewModel.Instructors = await service.ListAllInstructorsAsync();
+
+                if (id.HasValue)
+                {
+                    ViewData["InstructorId"] = id.Value;
+                    viewModel.Courses = await service.ListAllInstructorCoursesAsync(id.Value);
+                }
+
+                if (courseId.HasValue)
+                {
+                    ViewData["CourseId"] = courseId.Value;
+                    viewModel.Enrollments = await service.ListAllStudentsEnrolledInCourseAsync(courseId.Value);
+                }
             }
-
-            if (courseId != null)
+            catch (Exception ex)
             {
-                ViewData["CourseId"] = courseId.Value;
-                viewModel.Enrollments = viewModel.Courses.Where(
-                        c => c.CourseId == courseId.Value
-                    ).Single().Enrollments;
+                _logger.LogError(ex, "Exception in Index: " + ex.Message);
+                ViewBag.HasError = true;
+                ViewBag.Message = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
             }
 
             return View($"{_viewFolder}Index.cshtml", viewModel);
         }
 
         // GET: Instructors/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int? id, [FromServices] IInstructorService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var instructor = await _context.Instructors
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.InstructorId == id);
+            var instructor = await service.GetInstructorByIdForDetailAsync(id.Value);
             if (instructor == null)
             {
                 return NotFound();
@@ -82,13 +70,16 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Details.cshtml", instructor);
         }
 
-        // GET: Instructors/Create
-        public IActionResult Create()
+        private async Task PopulateCourseAssignedDataAsync(
+            IEnumerable<int> currentAssignedCoursesId, IInstructorService service)
         {
-            PopulateCourseAssignedData(
-                new Instructor { 
-                    CourseAssignments = new List<CourseAssignment>() 
-                });
+            ViewData["Courses"] = await service.ListAllCourseOptionsAsync(currentAssignedCoursesId);
+        }
+
+        // GET: Instructors/Create
+        public async Task<IActionResult> Create([FromServices] IInstructorService service)
+        {
+            await PopulateCourseAssignedDataAsync(new List<int>(), service);
             return View($"{_viewFolder}Create.cshtml");
         }
 
@@ -98,73 +89,50 @@ namespace MyApp.WebMvc03.Controllers.School
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
-            [Bind("LastName,FirstMidName,HireDate,OfficeAssignment")] Instructor instructor,
-            string[] selectedCourses)
+            InstructorAddEditDto instructorDto, [FromServices] IInstructorService service)
         {
-            if (selectedCourses != null)
-            {
-                var courseAssignments = new List<CourseAssignment>();
-                foreach (var courseIdStr in selectedCourses)
-                {
-                    courseAssignments.Add(
-                        new CourseAssignment { 
-                            InstructorId = instructor.InstructorId,
-                            CourseId = int.Parse(courseIdStr)
-                        });
-                }
-                instructor.CourseAssignments = courseAssignments;
-            }
-            
             if (ModelState.IsValid)
             {
-                _context.Add(instructor);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await service.CreateInstructorAndSaveAsync(instructorDto);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (GeneralException ex)
+                {
+                    ViewBag.HasError = true;
+                    ViewBag.Message = ex.Message;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error in Create: " + ex.Message);
+                    ViewBag.HasError = true;
+                    ViewBag.Message = Constants.ERROR_MESSAGE_SAVE + ": " + ex.Message;
+                }
             }
 
-            PopulateCourseAssignedData(instructor);
+            await PopulateCourseAssignedDataAsync(instructorDto.CoursesAssigned, service);
 
-            return View($"{_viewFolder}Create.cshtml", instructor);
+            return View($"{_viewFolder}Create.cshtml", instructorDto);
         }
 
         // GET: Instructors/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(int? id, [FromServices] IInstructorService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var instructor = await _context.Instructors
-                .Include(i => i.OfficeAssignment)
-                .Include(i => i.CourseAssignments)
-                    .ThenInclude(ca => ca.Course)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(i => i.InstructorId == id);
+            var instructor = await service.GetInstructorByIdForEditAsync(id.Value);
             if (instructor == null)
             {
                 return NotFound();
             }
-            PopulateCourseAssignedData(instructor);
-            return View($"{_viewFolder}Edit.cshtml", instructor);
-        }
+            
+            await PopulateCourseAssignedDataAsync(instructor.CoursesAssigned, service);
 
-        private void PopulateCourseAssignedData(Instructor instructor)
-        {
-            var allCourses = _context.Courses.OrderBy(c => c.CourseId).ToList();
-            var currentAssignedCoursesId = new HashSet<int>(instructor.CourseAssignments.Select(ca => ca.CourseId));
-            var courseOptions = new List<CourseAssignedData>();
-            foreach (var course in allCourses)
-            {
-                courseOptions.Add(
-                    new CourseAssignedData
-                    { 
-                        CourseId = course.CourseId,
-                        Title = course.Title,
-                        IsAssigned = currentAssignedCoursesId.Contains(course.CourseId)
-                    });
-            }
-            ViewData["Courses"] = courseOptions;
+            return View($"{_viewFolder}Edit.cshtml", instructor);
         }
 
         // POST: Instructors/Edit/5
@@ -172,100 +140,61 @@ namespace MyApp.WebMvc03.Controllers.School
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostEdit(int? id, string[] selectedCourses)
+        public async Task<IActionResult> PostEdit(
+            int? id, InstructorAddEditDto instructorDto, [FromServices] IInstructorService service)
         {
-            if (id == null)
+            if (!id.HasValue || id.Value != instructorDto.InstructorId)
             {
                 return NotFound();
             }
 
-            var instructorDb = await _context.Instructors
-                .Include(i => i.OfficeAssignment)
-                .Include(i => i.CourseAssignments)
-                    .ThenInclude(ca => ca.Course)
-                .FirstOrDefaultAsync(i => i.InstructorId == id);
-
-            var isUpdateable = await TryUpdateModelAsync<Instructor>(
-                instructorDb, "",
-                i => i.FirstMidName, i => i.LastName, 
-                i => i.HireDate, i => i.OfficeAssignment);
-
-            if (isUpdateable)
+            if (ModelState.IsValid)
             {
-                if (string.IsNullOrWhiteSpace(instructorDb.OfficeAssignment?.Location))
-                {
-                    instructorDb.OfficeAssignment = null;
-                }
-
-                UpdateInstructorCourses(selectedCourses, instructorDb);
-
                 try
                 {
-                    await _context.SaveChangesAsync();
+                    await service.UpdateInstructorAndSaveAsync(instructorDto);
                 }
-                catch (DbUpdateException)
+                catch (GeneralException ex)
                 {
-                    //_logger.LogError(ex, "Failed to edit Instructor: id={id}", id);
-                    ModelState.AddModelError("", Constants.ERROR_MESSAGE_SAVE);
+                    ViewBag.HasError = true;
+                    ViewBag.Message = ex.Message;
+                }
+                catch (Exception ex)
+                {
+                    ViewBag.HasError = true;
+                    ViewBag.Message = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
                 }
 
                 return RedirectToAction(nameof(Index));
             }
 
-            return View($"{_viewFolder}Edit.cshtml", instructorDb);
-        }
+            await PopulateCourseAssignedDataAsync(instructorDto.CoursesAssigned, service);
 
-        private void UpdateInstructorCourses(string[] selectedCourses, Instructor instructorToUpdate)
-        {
-            if (selectedCourses == null)
-            {
-                instructorToUpdate.CourseAssignments = new List<CourseAssignment>();
-                return;
-            }
-
-            var coursesAssignedNew = new HashSet<string>(selectedCourses);
-            var coursesAssignedExisting = new HashSet<int>(
-                instructorToUpdate.CourseAssignments.Select(ca => ca.CourseId));
-
-            foreach (var course in _context.Courses)
-            {
-                if (coursesAssignedNew.Contains(course.CourseId.ToString()))
-                {
-                    if (!coursesAssignedExisting.Contains(course.CourseId))
-                    {
-                        // add new record
-                        instructorToUpdate.CourseAssignments.Add(
-                            new CourseAssignment { 
-                                InstructorId = instructorToUpdate.InstructorId,
-                                CourseId = course.CourseId
-                            });
-                    }
-                }
-                else
-                {
-                    if (coursesAssignedExisting.Contains(course.CourseId))
-                    {
-                        // remove existing record
-                        var itemToRemove = instructorToUpdate.CourseAssignments.FirstOrDefault(ca => ca.CourseId == course.CourseId);
-                        _context.Remove(itemToRemove);
-                    }
-                }
-            }
+            return View($"{_viewFolder}Edit.cshtml", instructorDto);
         }
 
         // GET: Instructors/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int? id, [FromServices] IInstructorService service)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var instructor = await _context.Instructors
-                .FirstOrDefaultAsync(m => m.InstructorId == id);
+            var hasPreviousError = TempData["HasError"] != null && Convert.ToBoolean(TempData["HasError"]);
+            var message = Convert.ToString(TempData["Message"]);
+
+            var instructor = await service.GetInstructorByIdForDetailAsync(id.Value);
             if (instructor == null)
             {
-                return NotFound();
+                // deleted by another user in previous delete request
+                if (hasPreviousError)
+                {
+                    TempData["Message"] = message;
+                    TempData["HasError"] = hasPreviousError;
+                    return RedirectToAction(nameof(Index));
+                }
+                return NotFound(); // new delete request
             }
 
             return View($"{_viewFolder}Delete.cshtml", instructor);
@@ -274,26 +203,31 @@ namespace MyApp.WebMvc03.Controllers.School
         // POST: Instructors/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int?  id, [FromServices] IInstructorService service)
         {
-            var instructor = await _context.Instructors
-                .Include(i => i.CourseAssignments) // to effect cascade delete
-                .SingleAsync(i => i.InstructorId == id);
+            if (!id.HasValue)
+            {
+                return NotFound();
+            }
 
-            var departments = await _context.Departments
-                .Where(d => d.InstructorId == id)
-                .ToListAsync();
-            departments.ForEach(d => d.InstructorId = null);
-
-            _context.Instructors.Remove(instructor);
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool InstructorExists(int id)
-        {
-            return _context.Instructors.Any(e => e.InstructorId == id);
+            try
+            {
+                await service.DeleteInstructorAndSaveAsync(id.Value);
+                TempData["Message"] = Constants.SUCCESS_MESSAGE;
+                return RedirectToAction(nameof(Index));
+            }
+            catch (GeneralException ex)
+            {
+                TempData["Message"] = ex.Message;
+                TempData["HasError"] = true;
+                return RedirectToAction(nameof(Delete), new { id = id.Value });
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
+                TempData["HasError"] = true;
+                return RedirectToAction(nameof(Delete), new { id = id.Value });
+            }
         }
     }
 }
