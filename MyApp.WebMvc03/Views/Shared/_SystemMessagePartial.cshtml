@@ -1,0 +1,35 @@
+﻿@{
+    // try to load any values from TempData first, if not available then check on ViewBag
+
+    if (!String.IsNullOrWhiteSpace((string)TempData["Message"])
+        || !String.IsNullOrWhiteSpace(ViewBag.Message))
+    {
+        bool hasError = false;
+        if (TempData["HasError"] != null)
+        {
+            hasError = (bool)TempData["HasError"];
+        }
+        else if (ViewBag.HasError != null)
+        {
+            hasError = ViewBag.HasError;
+        }
+
+        var message = (string)TempData["Message"] ?? ViewBag.Message;
+
+        var alertClass = "alert alert-success alert-dismissible show fade";
+        if (hasError)
+        {
+            alertClass = "alert alert-danger alert-dismissible show fade";
+        }
+
+    <div class="@alertClass" role="alert">
+        <h6 class="text-left">
+            @{ WriteLiteral(message); }
+        </h6>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    }
+}

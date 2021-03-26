@@ -1,0 +1,76 @@
+﻿@model MyApp.School.Public.Dtos.StudentDetailDto
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Student</h4>
+    <hr />
+    <div>
+        <dl class="row">
+            <dt class="col-md-2 col-4">
+                @Html.DisplayNameFor(model => model.LastName)
+            </dt>
+            <dd class="col-md-10 col-8">
+                @Html.DisplayFor(model => model.LastName)
+            </dd>
+            <dt class="col-md-2 col-4">
+                @Html.DisplayNameFor(model => model.FirstMidName)
+            </dt>
+            <dd class="col-md-10 col-8">
+                @Html.DisplayFor(model => model.FirstMidName)
+            </dd>
+            <dt class="col-md-2 col-4">
+                @Html.DisplayNameFor(model => model.EnrollmentDate)
+            </dt>
+            <dd class="col-md-10 col-8">
+                @Html.DisplayFor(model => model.EnrollmentDate)
+            </dd>
+            <dt class="col-md-2 col-sm-4">
+                @Html.DisplayNameFor(model => model.Enrollments)
+            </dt>
+            <dd class="col-md-8 col-sm-8">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Course Title</th>
+                            <th>Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Enrollments != null && Model.Enrollments.Any())
+                        {
+                            @foreach (var item in Model.Enrollments)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.CourseTitle)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.Grade)
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="2" class="text-center font-weight-bold text-danger">
+                                    No Records
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </dd>
+        </dl>
+    </div>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.StudentId">Edit</a> |
+    <a asp-action="Delete" asp-route-id="@Model.StudentId">Delete</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

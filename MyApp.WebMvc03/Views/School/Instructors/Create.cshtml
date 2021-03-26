@@ -1,0 +1,84 @@
+﻿@model MyApp.School.Public.Dtos.InstructorAddEditDto
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Instructor</h4>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group row">
+                <label asp-for="LastName" class="col-sm-4 col-md-2 control-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="LastName" class="form-control" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label asp-for="FirstMidName" class="col-sm-4 col-md-2 control-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="FirstMidName" class="form-control" />
+                    <span asp-validation-for="FirstMidName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label asp-for="HireDate" class="col-sm-4 col-md-2 control-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="HireDate" class="form-control" />
+                    <span asp-validation-for="HireDate" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label asp-for="OfficeLocation" class="col-sm-4 col-md-2 control-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="OfficeLocation" class="form-control" />
+                    <span asp-validation-for="OfficeLocation" class="text-danger" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label asp-for="CoursesAssigned" class="col-sm-4 col-md-2 control-label"></label>
+                <div class="col-sm-12 col-md-6">
+                    <table class="table table-borderless">
+                        <tr>
+                            @{
+                                int cnt = 0;
+                                List<MyApp.School.Public.Dtos.CourseAssignedData> courses = ViewBag.Courses;
+
+                                foreach (var course in courses)
+                                {
+                                    if (cnt++ % 2 == 0)
+                                    {
+                                    @:</tr><tr>
+                                    }
+                                    @:<td>
+                                        <input type="checkbox"
+                                               name="CoursesAssigned"
+                                               value="@course.CourseId"
+                                               @(Html.Raw(course.IsAssigned ? "checked=\"checked\"" : "")) />
+                                        @course.CourseId @:  @course.Title
+                                    @:</td>
+                                }
+                            @:</tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

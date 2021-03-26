@@ -1,0 +1,152 @@
+﻿@using MyApp.School.Public.Dtos
+@using MyApp.Common.Dtos
+
+@model MyApp.School.Public.Dtos.StudentListDto
+
+@{
+    ViewData["Title"] = "Students";
+    ViewData["ScriptNameList"] = new string[] { "~/js/school/students-index.js" };
+}
+
+<h1>Students</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<form asp-action="Index" method="get" id="sort-filter-form">
+    <input type="hidden" asp-for="FilterSortPageValues.PreviousStateValue" id="PreviousStateValue" name="PreviousStateValue" />
+    <input type="hidden" asp-for="FilterSortPageValues.PageIndex" id="PageIndex" name="PageIndex" />
+    <input type="hidden" asp-for="FilterSortPageValues.SortBy" id="SortBy" name="SortBy" />
+    <input type="hidden" asp-for="FilterSortPageValues.SortAscending" id="SortAscending" name="SortAscending" />
+    <div class="form-row">
+        <div class="col-auto">
+            <select asp-for="FilterSortPageValues.FilterBy" id="FilterBy" name="FilterBy"
+                    asp-items="Html.GetEnumSelectList<StudentsFilterOptions>()"
+                    class="form-control mb-2"
+                    onchange="javascript: StudentList.filterByHasChanged(this);"></select>
+        </div>
+        <div class="col-auto">
+            <input value="@Model.FilterSortPageValues.FilterValue" id="FilterValue" name="FilterValue"
+                   type="@( (Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.EnrollmentDateAfter || Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.EnrollmentDateBefore) ? "date" : "text")"
+                   @(Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.NoFilter ? "readonly" : "")
+                   class="form-control mb-2">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary mb-2"
+                    onclick="javascript: StudentList.submitForm();">
+                Search
+            </button>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Index" class="btn btn-primary mb-2">Reset</a>
+        </div>
+    </div>
+
+    <div>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.LastName));">
+                            Last Name
+                        </a>
+                    </th>
+                    <th>
+                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.FirstMidName));">
+                            First Name
+                        </a>
+                    </th>
+                    <th>
+                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.EnrollmentDate));">
+                            Enrollment Date
+                        </a>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Listing != null && Model.Listing.Any())
+                {
+                    @foreach (var item in Model.Listing)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LastName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.FirstMidName)
+                            </td>
+                            <td class="text-nowrap">
+                                @Html.DisplayFor(modelItem => item.EnrollmentDate)
+                            </td>
+                            <td class="text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@item.StudentId">Edit</a> |
+                                <a asp-action="Details" asp-route-id="@item.StudentId">Details</a> |
+                                <a asp-action="Delete" asp-route-id="@item.StudentId">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center font-weight-bold text-danger">
+                            No Records
+                        </td>
+                    </tr>
+                }
+                </tbody>
+        </table>
+    </div>
+
+    @{
+        var prevDisabled = "disabled";
+        var nextDisabled = "disabled";
+
+        var currentPageNo = 1;
+        var totalPages = 1;
+        var prevPageNo = 0;
+        var nextPageNo = 0;
+
+        if (Model.Listing != null)
+        {
+            prevDisabled = Model.Listing.HasPreviousPage ? "" : "disabled";
+            nextDisabled = Model.Listing.HasNextPage ? "" : "disabled";
+
+            currentPageNo = Model.Listing.PageIndex;
+            totalPages = @Model.Listing.TotalPages;
+            prevPageNo = currentPageNo - 1;
+            nextPageNo = currentPageNo + 1;
+        }
+    }
+    <div class="row">
+        <div class="text-left col-sm-4">
+            <a class="btn btn-primary @prevDisabled" href="#"
+                onclick="javascript: StudentList.submitGoToPage(@prevPageNo); return false;">
+                Previous
+            </a>
+            <a class="btn btn-primary @nextDisabled" href="#"
+                onclick="javascript: StudentList.submitGoToPage(@nextPageNo); return false;">
+                Next
+            </a>
+        </div>
+        <div class="text-center font-weight-bold col-sm-4 mb-2 mt-2">
+            Page @currentPageNo of @totalPages
+        </div>
+        <div class="font-weight-bold col-sm-4">
+            <div class="row">
+                <div class="col-auto">
+                    <select asp-for="FilterSortPageValues.PageSize" id="PageSize" name="PageSize"
+                            asp-items="Html.GetEnumSelectList<PageSizeOptions>()"
+                            class="form-control m-0"
+                            onchange="javascript: StudentList.submitForm();"></select>
+                </div>
+                <div class="col-auto">
+                    Rows Per Page
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
