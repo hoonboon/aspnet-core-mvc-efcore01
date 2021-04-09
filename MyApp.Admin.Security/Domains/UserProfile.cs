@@ -19,5 +19,7 @@ namespace MyApp.Admin.Security.Domains
         public int UsernameChangeLimit { get; set; } = 10;
         [PersonalData]
         public byte[] ProfilePicture { get; set; }
+
+        public bool IsEnabled { get; set; } = true;
     }
 }

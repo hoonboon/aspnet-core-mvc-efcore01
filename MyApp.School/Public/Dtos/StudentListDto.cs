@@ -1,4 +1,4 @@
-﻿using MyApp.Common.Dtos;
+﻿using MyApp.Common.Public.Dtos;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

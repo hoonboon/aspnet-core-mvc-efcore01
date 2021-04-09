@@ -23,12 +23,12 @@ namespace MyApp.WebMvc03.Data
                 var logger = services.GetRequiredService<ILogger<Program>>();
 
                 var userManager = services.GetRequiredService<UserManager<UserProfile>>();
-                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                var roleManager = services.GetRequiredService<RoleManager<CustomRole>>();
                 
                 var config = webHost.Services.GetRequiredService<IConfiguration>();
                 var defaultUserPwd = config["SeedData:DefaultUserPwd"];
                 logger.LogInformation($"using defaultUserPwd={defaultUserPwd}");
-                
+
                 var securityContext = services.GetRequiredService<SecurityDbContext>();
                 var schoolContext = services.GetRequiredService<SchoolDbContext>();
                 try

@@ -1,4 +1,4 @@
-﻿@model List<Microsoft.AspNetCore.Identity.IdentityRole>
+﻿@model List<MyApp.Admin.Security.Public.Dtos.RoleListDto>
 @{
     ViewData["Title"] = "Roles";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -17,20 +17,43 @@
 </div>*@
 <br />
 <div>
-    <table class="table table-striped">
+    <table class="table table-sm table-striped">
         <thead>
-            <tr class="row">
-                <th class="col">Id</th>
-                <th class="col">Role Name</th>
+            <tr>
+                <th>@Html.LabelFor(x => x.ElementAtOrDefault(0).Name)</th>
+                <th>@Html.LabelFor(x => x.ElementAtOrDefault(0).RoleDescription)</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var role in Model)
-            {
-                <tr class="row">
-                    <td class="col">@role.Id</td>
-                    <td class="col">@role.Name</td>
-                </tr>
+            @{ 
+                if (Model != null && Model.Any())
+                {
+                    foreach (var role in Model)
+                    {
+                    <tr>
+                        <td>@role.Name</td>
+                        <td>@role.RoleDescription</td>
+                        <td>
+                            <a asp-action="Details" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Details</a>
+                            <a asp-action="Edit" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Edit</a>
+                            <a asp-action="CreateCopy" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Create Copy</a>
+                            @if (!role.IsBuiltInRole)
+                            {
+                                <a asp-action="Delete" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Delete</a>
+                            }
+                        </td>
+                    </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="3" class="text-center font-weight-bold text-danger">
+                            @Constants.NO_RECORD
+                        </td>
+                    </tr>
+                }
             }
         </tbody>
     </table>

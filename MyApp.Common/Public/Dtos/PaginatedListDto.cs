@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace MyApp.Common.Dtos
+namespace MyApp.Common.Public.Dtos
 {
-    public class PaginatedListDto<T>: List<T>
+    public class PaginatedListDto<T> : List<T>
     {
         public int PageIndex { get; private set; }
         public int TotalPages { get; private set; }
@@ -11,10 +11,10 @@ namespace MyApp.Common.Dtos
         {
             TotalPages = totalPages;
             PageIndex = pageIndex;
-            
+
             if (items != null)
             {
-                this.AddRange(items);
+                AddRange(items);
             }
         }
 
@@ -22,7 +22,7 @@ namespace MyApp.Common.Dtos
         {
             get
             {
-                return (PageIndex > 1);
+                return PageIndex > 1;
             }
         }
 
@@ -30,7 +30,7 @@ namespace MyApp.Common.Dtos
         {
             get
             {
-                return (PageIndex < TotalPages);
+                return PageIndex < TotalPages;
             }
         }
 

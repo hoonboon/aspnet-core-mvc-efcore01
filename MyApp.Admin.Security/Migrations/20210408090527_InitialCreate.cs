@@ -11,6 +11,19 @@ namespace MyApp.Admin.Security.Migrations
                 name: "Security");
 
             migrationBuilder.CreateTable(
+                name: "CacheControl",
+                schema: "Security",
+                columns: table => new
+                {
+                    CacheKey = table.Column<string>(maxLength: 60, nullable: false),
+                    LastRefreshTimeUtc = table.Column<long>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CacheControl", x => x.CacheKey);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Role",
                 schema: "Security",
                 columns: table => new
@@ -18,7 +31,10 @@ namespace MyApp.Admin.Security.Migrations
                     Id = table.Column<string>(nullable: false),
                     Name = table.Column<string>(maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(nullable: true)
+                    ConcurrencyStamp = table.Column<string>(nullable: true),
+                    RoleDescription = table.Column<string>(nullable: false),
+                    IsBuiltInRole = table.Column<bool>(nullable: false),
+                    PermissionsInRole = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -49,7 +65,8 @@ namespace MyApp.Admin.Security.Migrations
                     LastName = table.Column<string>(nullable: true),
                     DOB = table.Column<DateTime>(nullable: false),
                     UsernameChangeLimit = table.Column<int>(nullable: false),
-                    ProfilePicture = table.Column<byte[]>(nullable: true)
+                    ProfilePicture = table.Column<byte[]>(nullable: true),
+                    IsEnabled = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -222,6 +239,10 @@ namespace MyApp.Admin.Security.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "CacheControl",
+                schema: "Security");
+
             migrationBuilder.DropTable(
                 name: "RoleClaims",
                 schema: "Security");

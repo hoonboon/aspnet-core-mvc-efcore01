@@ -1,0 +1,93 @@
+﻿@using MyApp.Admin.Security.Public.Dtos
+
+@model MyApp.Admin.Security.Public.Dtos.RoleDetailDto
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+
+<h3>Confirm to delete this?</h3>
+<div>
+    <h4>Role</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-md-2 col-4">
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+        <dd class="col-md-10 col-8">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-md-2 col-4">
+            @Html.DisplayNameFor(model => model.RoleDescription)
+        </dt>
+        <dd class="col-md-10 col-8">
+            @Html.DisplayFor(model => model.RoleDescription)
+        </dd>
+        @*
+        <dt class="col-md-2 col-4">
+            @Html.DisplayNameFor(model => model.PermissionsInput)
+        </dt>
+        <dd class="col-md-10 col-12">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th class="text-center">Modules</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        AllPermissionOptionsDto optionsDto = Model.PermissionOptions;
+                        IEnumerable<string> groupNameList = optionsDto.GroupNameList;
+                        IDictionary<string, List<PermissionOptionItemDto>> optionsDictionary = optionsDto.OptionsByGroupName;
+                        List<PermissionOptionItemDto> tempOptions = null;
+
+                        foreach (var groupName in groupNameList)
+                        {
+                            if (optionsDictionary.TryGetValue(groupName, out tempOptions))
+                            {
+                                <tr>
+                                    <td>
+                                        @groupName
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                            @{
+                                                foreach (var option in tempOptions)
+                                                {
+                                                    <div class="form-check m-1 mr-2 ml-2">
+                                                        <input type="checkbox"
+                                                               disabled
+                                                               class="form-check-input"
+                                                               name="PermissionsInput"
+                                                               value="@option.Value"
+                                                               @(Html.Raw(option.IsSelected ? "checked=\"checked\"" : "")) />
+                                                        <label class="form-check-label">
+                                                            @option.Label
+                                                        </label>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+        </dd>
+        *@
+    </dl>
+</div>
+
+<div>
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="RoleId" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
+</div>
+

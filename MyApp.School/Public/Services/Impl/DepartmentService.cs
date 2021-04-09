@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MyApp.Common.Exceptions;
+using MyApp.Common.Public.Exceptions;
 using MyApp.School.Domains;
 using MyApp.School.Public.Data;
 using MyApp.School.Public.Dtos;

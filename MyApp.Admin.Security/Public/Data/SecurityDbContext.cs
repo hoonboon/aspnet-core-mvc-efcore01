@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MyApp.Admin.Security.Domains;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MyApp.Admin.Security.Public.Data
@@ -21,12 +23,34 @@ namespace MyApp.Admin.Security.Public.Data
      */
 
     // must extend IdentityDbContext first before being re-used to Scaffold Identity
-    public class SecurityDbContext : IdentityDbContext<UserProfile>
+    public class SecurityDbContext : IdentityDbContext<UserProfile, CustomRole, string>
     {
         public static readonly string DbSchemaName = "Security";
-        
-        public SecurityDbContext(DbContextOptions<SecurityDbContext> options) : base(options)
+
+        private readonly ILogger<SecurityDbContext> _logger;
+
+        public SecurityDbContext(
+            DbContextOptions<SecurityDbContext> options, 
+            ILogger<SecurityDbContext> logger) : base(options)
         {
+            _logger = logger;
+        }
+
+        public DbSet<CacheControl> CacheControls { get; set; }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            _logger.LogInformation("SaveChanges() called");
+
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override async Task<int> SaveChangesAsync(
+            bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("SaveChangesAsync() called");
+
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -38,9 +62,11 @@ namespace MyApp.Admin.Security.Public.Data
             {
                 entity.ToTable(name: "User", schema: DbSchemaName);
             });
-            modelBuilder.Entity<IdentityRole>(entity =>
+            modelBuilder.Entity<CustomRole>(entity =>
             {
                 entity.ToTable(name: "Role", schema: DbSchemaName);
+                entity.Property("_permissionsInRole")
+                    .HasColumnName("PermissionsInRole");
             });
             modelBuilder.Entity<IdentityUserRole<string>>(entity =>
             {
@@ -63,6 +89,7 @@ namespace MyApp.Admin.Security.Public.Data
                 entity.ToTable("UserTokens", DbSchemaName);
             });
 
+            modelBuilder.Entity<CacheControl>().ToTable(schema: DbSchemaName, name: "CacheControl");
         }
     }
 }

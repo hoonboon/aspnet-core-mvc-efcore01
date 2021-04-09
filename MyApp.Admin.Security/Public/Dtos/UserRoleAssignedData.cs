@@ -9,6 +9,6 @@ namespace MyApp.Admin.Security.Public.Dtos
     {
         public string RoleId { get; set; }
         public string RoleName { get; set; }
-        public bool IsAssigned { get; set; }
+        public bool IsAssigned { get; set; } = false;
     }
 }

@@ -13,9 +13,9 @@ namespace MyApp.Admin.Security.Public.Services.Impl
     public class UserRoleService : IUserRoleService
     {
         private readonly UserManager<UserProfile> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<CustomRole> _roleManager;
 
-        public UserRoleService(UserManager<UserProfile> userManager, RoleManager<IdentityRole> roleManager)
+        public UserRoleService(UserManager<UserProfile> userManager, RoleManager<CustomRole> roleManager)
         {
             _userManager = userManager;
             _roleManager = roleManager;
@@ -63,10 +63,6 @@ namespace MyApp.Admin.Security.Public.Services.Impl
                 if (await _userManager.IsInRoleAsync(User, role.Name))
                 {
                     userRolesAssigned.IsAssigned = true;
-                }
-                else
-                {
-                    userRolesAssigned.IsAssigned = false;
                 }
                 model.Add(userRolesAssigned);
             }

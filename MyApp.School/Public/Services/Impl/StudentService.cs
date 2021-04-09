@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MyApp.Common.Dtos;
-using MyApp.Common.Exceptions;
+using MyApp.Common.Public.Exceptions;
+using MyApp.Common.Public.Dtos;
 using MyApp.School.Domains;
 using MyApp.School.Efcore;
 using MyApp.School.Public.Data;
@@ -26,7 +26,7 @@ namespace MyApp.School.Public.Services.Impl
             _context = context;
         }
 
-        public async Task<PaginatedListDto<StudentListItem>> ListAllStudentssAsync(
+        public async Task<PaginatedListDto<StudentListItem>> ListAllStudentsAsync(
             ListingFilterSortPageDto filterSortPageDto)
         {
             // call this first to:

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MyApp.Common.Dtos;
-using MyApp.Common.Exceptions;
+using MyApp.Common.Public.Dtos;
+using MyApp.Common.Public.Exceptions;
 using MyApp.School.Public.Dtos;
 using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Utils;
@@ -31,7 +31,7 @@ namespace MyApp.WebMvc03.Controllers.School
 
             try
             {
-                paginatedList = await service.ListAllStudentssAsync(filterSortPageDto);
+                paginatedList = await service.ListAllStudentsAsync(filterSortPageDto);
 
                 // set the final page index based on the latest database records available
                 filterSortPageDto.PageIndex = paginatedList.PageIndex;

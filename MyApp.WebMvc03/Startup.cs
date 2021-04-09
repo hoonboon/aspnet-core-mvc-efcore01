@@ -2,15 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyApp.Admin.Security.Domains;
 using MyApp.Admin.Security.Public.Data;
 using MyApp.Admin.Security.Public.Services;
-using MyApp.School.Public.Data;
 using MyApp.School.Public.Services;
+using MyApp.WebMvc03.Data;
 using NetCore.AutoRegisterDi;
 using System;
 using System.Reflection;
@@ -37,29 +36,11 @@ namespace MyApp.WebMvc03
             //    options.MinimumSameSitePolicy = SameSiteMode.None;
             //});
 
-            var defaultConnStr = Configuration.GetConnectionString("DefaultConnection");
-
-            //This registers both DbContext. Each MUST have a unique MigrationsHistoryTable for Migrations to work
-            services.AddDbContext<SecurityDbContext>(options =>
-            {
-                options.UseSqlServer(defaultConnStr, 
-                    dbOptions => dbOptions.MigrationsHistoryTable("_EFMigrationHistory_Security"));
-
-                if (_env.IsDevelopment())
-                    options.EnableSensitiveDataLogging();
-            });
-
-            services.AddDbContext<SchoolDbContext>(options =>
-            {
-                options.UseSqlServer(defaultConnStr, 
-                    dbOptions => dbOptions.MigrationsHistoryTable("_EFMigrationHistory_School"));
-
-                if (_env.IsDevelopment())
-                    options.EnableSensitiveDataLogging();
-            });
+            // Extension to register all the databases context used in this app
+            services.RegisterDatabases(Configuration, _env);
 
             // must add this after scaffold Identity
-            services.AddIdentity<UserProfile, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddIdentity<UserProfile, CustomRole>(options => options.SignIn.RequireConfirmedAccount = true)
                     .AddEntityFrameworkStores<SecurityDbContext>()
                     .AddDefaultUI()
                     .AddDefaultTokenProviders();
@@ -99,6 +80,7 @@ namespace MyApp.WebMvc03
 
             //This registers all the services across all the projects in this application
             var diLogs = services.RegisterAssemblyPublicNonGenericClasses(
+                    Assembly.GetAssembly(typeof(ICacheControlService)),
                     Assembly.GetAssembly(typeof(IRoleService)),
                     Assembly.GetAssembly(typeof(IUserRoleService)),
                     Assembly.GetAssembly(typeof(ICourseService)),

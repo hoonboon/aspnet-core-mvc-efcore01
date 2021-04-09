@@ -1,4 +1,4 @@
-﻿using MyApp.Common.Dtos;
+﻿using MyApp.Common.Public.Dtos;
 using MyApp.School.Public.Dtos;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ namespace MyApp.School.Public.Services
 {
     public interface IStudentService
     {
-        Task<PaginatedListDto<StudentListItem>> ListAllStudentssAsync(ListingFilterSortPageDto filterSortPageDto);
+        Task<PaginatedListDto<StudentListItem>> ListAllStudentsAsync(ListingFilterSortPageDto filterSortPageDto);
 
         Task<StudentDetailDto> GetStudentByIdForDetailAsync(int studentId);
 

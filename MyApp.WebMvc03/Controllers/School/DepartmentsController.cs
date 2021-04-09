@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using MyApp.Common.Exceptions;
+using MyApp.Common.Public.Exceptions;
 using MyApp.School.Public.Dtos;
 using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Utils;

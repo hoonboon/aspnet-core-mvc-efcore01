@@ -13,7 +13,7 @@ namespace MyApp.Admin.Security.Public.Data
     public static class DatabaseSeederExtension
     {
         public static async Task SeedDatabaseWithSecurityDataAsync(this SecurityDbContext context,
-            UserManager<UserProfile> userManager, RoleManager<IdentityRole> roleManager,
+            UserManager<UserProfile> userManager, RoleManager<CustomRole> roleManager,
             string defaultUserPwd)
         {
             try
@@ -32,10 +32,22 @@ namespace MyApp.Admin.Security.Public.Data
             }
 
             //Seed Roles
-            await roleManager.CreateAsync(new IdentityRole(Roles.SuperAdmin.ToString()));
-            await roleManager.CreateAsync(new IdentityRole(Roles.Admin.ToString()));
-            await roleManager.CreateAsync(new IdentityRole(Roles.Manager.ToString()));
-            await roleManager.CreateAsync(new IdentityRole(Roles.Staff.ToString()));
+            await roleManager.CreateAsync(
+                new CustomRole(
+                    Roles.SuperAdmin.ToString(), "Super Admin", true, 
+                    new [] { Permissions.AccessAll }));
+            await roleManager.CreateAsync(
+                new CustomRole(
+                    Roles.Admin.ToString(), "Admin", true,
+                    new [] { Permissions.None }));
+            await roleManager.CreateAsync(
+                new CustomRole(
+                    Roles.Manager.ToString(), "Manager", true,
+                    new [] { Permissions.None }));
+            await roleManager.CreateAsync(
+                new CustomRole(
+                    Roles.Staff.ToString(), "Staff", true,
+                    new [] { Permissions.None }));
 
             //Seed Default User
             var defaultUser = new UserProfile

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MyApp.School.Domains;
+using Microsoft.Extensions.Logging;
+using System.Threading;
 
 namespace MyApp.School.Public.Data
 {
@@ -23,8 +25,28 @@ namespace MyApp.School.Public.Data
     {
         public static readonly string DbSchemaName = "School";
 
-        public SchoolDbContext(DbContextOptions<SchoolDbContext> options) : base(options)
+        private readonly ILogger<SchoolDbContext> _logger;
+
+        public SchoolDbContext(
+            DbContextOptions<SchoolDbContext> options,
+            ILogger<SchoolDbContext> logger) : base(options)
         {
+            _logger = logger;
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            _logger.LogInformation("SaveChanges() called");
+
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override async Task<int> SaveChangesAsync(
+            bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("SaveChangesAsync() called");
+
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
         }
 
         public DbSet<Course> Courses { get; set; }

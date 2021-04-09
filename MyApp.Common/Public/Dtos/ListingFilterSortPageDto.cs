@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace MyApp.Common.Dtos
+namespace MyApp.Common.Public.Dtos
 {
     public class ListingFilterSortPageDto
     {
@@ -19,7 +19,7 @@ namespace MyApp.Common.Dtos
 
         public int PageIndex { get; set; } = 1;
 
-        public int PageSize { get; set; } = ListingFilterSortPageDto.DEFAULT_PAGE_SIZE;
+        public int PageSize { get; set; } = DEFAULT_PAGE_SIZE;
 
         public string PreviousStateValue { get; set; }
 
@@ -30,16 +30,19 @@ namespace MyApp.Common.Dtos
 
         public void InitDto()
         {
-            var newStateValue = this.GenerateStateValue();
-            if (this.PreviousStateValue != newStateValue)
+            var newStateValue = GenerateStateValue();
+            if (PreviousStateValue != newStateValue)
             {
-                this.PageIndex = 1;
-                this.PreviousStateValue = newStateValue;
+                PageIndex = 1;
+                PreviousStateValue = newStateValue;
             }
         }
 
     }
+}
 
+namespace MyApp.Common.Public.Dtos
+{
     public enum PageSizeOptions
     {
         [Display(Name = "10")] _10 = 10,

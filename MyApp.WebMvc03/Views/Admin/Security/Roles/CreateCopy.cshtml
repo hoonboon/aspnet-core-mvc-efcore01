@@ -1,0 +1,96 @@
+﻿@using MyApp.Admin.Security.Public.Dtos
+
+@model MyApp.Admin.Security.Public.Dtos.RoleAddEditDto
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Role</h4>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="CreateCopy">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group row">
+                <label asp-for="Name" class="col-sm-4 col-md-2 control-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label asp-for="RoleDescription" class="col-sm-4 col-md-2 control-label"></label>
+                <div class="col-sm-8 col-md-4">
+                    <input asp-for="RoleDescription" class="form-control" />
+                    <span asp-validation-for="RoleDescription" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label asp-for="PermissionsInput" class="col-sm-4 col-md-2 control-label"></label>
+                <div class="col-sm-12 col-md-10">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Modules</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    @{
+                        AllPermissionOptionsDto optionsDto = Model.PermissionOptions;
+                        IEnumerable<string> groupNameList = optionsDto.GroupNameList;
+                        IDictionary<string, List<PermissionOptionItemDto>> optionsDictionary = optionsDto.OptionsByGroupName;
+                        List<PermissionOptionItemDto> tempOptions = null;
+
+                        foreach (var groupName in groupNameList)
+                        {
+                            if (optionsDictionary.TryGetValue(groupName, out tempOptions))
+                            {
+                            <tr>
+                                <td>
+                                    @groupName
+                                </td>
+                                <td>
+                                    <div class="row">
+                                        @{
+                                            foreach (var option in tempOptions)
+                                            {
+                                                <div class="form-check m-1 mr-2 ml-2">
+                                                    <input type="checkbox"
+                                                        class="form-check-input"
+                                                        name="PermissionsInput"
+                                                        value="@option.Value"
+                                                        @(Html.Raw(option.IsSelected ? "checked=\"checked\"" : "")) />
+                                                    <label class="form-check-label">
+                                                        @option.Label
+                                                    </label>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                            }
+                        }
+                    }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
