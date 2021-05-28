@@ -38,16 +38,12 @@ namespace MyApp.Admin.Security.Public.Data
                     new [] { Permissions.AccessAll }));
             await roleManager.CreateAsync(
                 new CustomRole(
-                    Roles.Admin.ToString(), "Admin", true,
-                    new [] { Permissions.None }));
+                    Roles.Admin.ToString(), "Default Admin", true,
+                    new[] { Permissions.None }));
             await roleManager.CreateAsync(
                 new CustomRole(
-                    Roles.Manager.ToString(), "Manager", true,
-                    new [] { Permissions.None }));
-            await roleManager.CreateAsync(
-                new CustomRole(
-                    Roles.Staff.ToString(), "Staff", true,
-                    new [] { Permissions.None }));
+                    Roles.User.ToString(), "Default User", true,
+                    new[] { Permissions.None }));
 
             //Seed Default User
             var defaultUser = new UserProfile
@@ -67,9 +63,6 @@ namespace MyApp.Admin.Security.Public.Data
                 if (user == null)
                 {
                     await userManager.CreateAsync(defaultUser, defaultUserPwd);
-                    await userManager.AddToRoleAsync(defaultUser, Roles.Staff.ToString());
-                    await userManager.AddToRoleAsync(defaultUser, Roles.Manager.ToString());
-                    await userManager.AddToRoleAsync(defaultUser, Roles.Admin.ToString());
                     await userManager.AddToRoleAsync(defaultUser, Roles.SuperAdmin.ToString());
                 }
 

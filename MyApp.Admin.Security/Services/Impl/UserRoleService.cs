@@ -2,13 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using MyApp.Admin.Security.Domains;
 using MyApp.Admin.Security.Public.Dtos;
+using MyApp.Admin.Security.Public.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyApp.Admin.Security.Public.Services.Impl
+namespace MyApp.Admin.Security.Services.Impl
 {
     public class UserRoleService : IUserRoleService
     {

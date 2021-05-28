@@ -1,17 +1,23 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyApp.Admin.Security.Domains;
+using MyApp.Admin.Security.Public.Constants;
 using MyApp.Admin.Security.Public.Data;
+using MyApp.Admin.Security.Public.Extensions;
+using MyApp.Admin.Security.Public.PermissionControl.Policy;
 using MyApp.Admin.Security.Public.Services;
 using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Data;
 using NetCore.AutoRegisterDi;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace MyApp.WebMvc03
@@ -30,11 +36,13 @@ namespace MyApp.WebMvc03
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.Configure<CookiePolicyOptions>(options =>
-            //{
-            //    options.CheckConsentNeeded = context => true;
-            //    options.MinimumSameSitePolicy = SameSiteMode.None;
-            //});
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.CheckConsentNeeded = context => false; // true;
+                options.HttpOnly = HttpOnlyPolicy.Always;
+                options.Secure = CookieSecurePolicy.Always;
+                options.MinimumSameSitePolicy = SameSiteMode.Strict;
+            });
 
             // Extension to register all the databases context used in this app
             services.RegisterDatabases(Configuration, _env);
@@ -66,27 +74,48 @@ namespace MyApp.WebMvc03
                 options.IdleTimeout = TimeSpan.FromSeconds(30 * 60);
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Strict;
             });
 
             services.AddControllersWithViews();
             services.AddRazorPages();
 
-            services.AddAuthorization(options =>
-            {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-            });
+            //Register the Permission policy handlers
+            services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
+            services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+
+            ////This is needed to implement the data authorize code 
+            //services.AddScoped<IGetClaimsProvider, GetClaimsFromUser>();
 
             //This registers all the services across all the projects in this application
             var diLogs = services.RegisterAssemblyPublicNonGenericClasses(
                     Assembly.GetAssembly(typeof(ICacheControlService)),
-                    Assembly.GetAssembly(typeof(IRoleService)),
-                    Assembly.GetAssembly(typeof(IUserRoleService)),
-                    Assembly.GetAssembly(typeof(ICourseService)),
-                    Assembly.GetAssembly(typeof(IDepartmentService))
+                    //Assembly.GetAssembly(typeof(IRoleService)),
+                    //Assembly.GetAssembly(typeof(IUserRoleService)),
+                    Assembly.GetAssembly(typeof(ICourseService))
+                //Assembly.GetAssembly(typeof(IDepartmentService))
                 )
+                .Where(c => c.Name.EndsWith("Service"))
                 .AsPublicImplementedInterfaces();
+            //services.UserImpersonationRegister();
+
+            //This enables Cookies for authentication and adds the feature and data claims to the user
+            services.ConfigureCookiesForExtraAuth();
+
+            ////This has to come after the ConfigureCookiesForExtraAuth settings, which sets up the IAuthChanges
+            //services.ConfigureGenericServicesEntities(typeof(ExtraAuthorizeDbContext), typeof(CompanyDbContext))
+            //    .ScanAssemblesForDtos(Assembly.GetAssembly(typeof(ListUsersDto)))
+            //    .RegisterGenericServices();
+
+            //services.AddAuthorization(options =>
+            //{
+            //    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            //        .RequireAuthenticatedUser()
+            //        .Build();
+            //});
+
+
 
         }
 
@@ -105,11 +134,25 @@ namespace MyApp.WebMvc03
 
             app.UseRouting();
 
+            app.UseCookiePolicy();
+
+            app.UseSession();
+
             app.UseAuthentication();
 
             app.UseAuthorization();
 
-            app.UseSession();
+            //This should come AFTER the app.UseAuthentication() call
+            //If UpdateCookieOnChange this adds a header which has the time that the user's claims were updated
+            //thanks to https://stackoverflow.com/a/48610119/1434764
+            app.Use((context, next) =>
+            {
+                var lastTimeUserPermissionsSet = context.User.Claims
+                    .SingleOrDefault(x => x.Type == PermissionConstants.LastPermissionsUpdatedClaimType)?.Value;
+                if (lastTimeUserPermissionsSet != null)
+                    context.Response.Headers["Last-Time-Users-Permissions-Updated"] = lastTimeUserPermissionsSet;
+                return next.Invoke();
+            });
 
             app.UseEndpoints(endpoints =>
             {

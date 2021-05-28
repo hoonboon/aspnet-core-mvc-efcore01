@@ -9,7 +9,7 @@ namespace MyApp.School.Efcore
 {
     public class PaginatedListHelper<T>
     {
-        public static async Task<PaginatedListDto<T>> CreateAsync(
+        public static async Task<PaginatedList<T>> CreateAsync(
             IQueryable<T> source, int pageIndex, int pageSize)
         {
             var totalPages = 1;
@@ -27,7 +27,7 @@ namespace MyApp.School.Efcore
                 items = await source.Skip((finalPageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
             }
             
-            return new PaginatedListDto<T>(items, finalPageIndex, totalPages);
+            return new PaginatedList<T>(items, finalPageIndex, totalPages, pageSize);
         }
 
     }

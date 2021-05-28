@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using MyApp.Admin.Security.Domains;
+using MyApp.Admin.Security.Public.Constants;
 using MyApp.Admin.Security.Public.Enums;
 using System;
 using System.Collections.Generic;
@@ -107,7 +108,7 @@ namespace MyApp.WebMvc03.Areas.Identity.Pages.Account
                     _logger.LogInformation("User created a new account with password.");
 
                     // Set default role for newly registered user
-                    await _userManager.AddToRoleAsync(user, Roles.Staff.ToString());
+                    await _userManager.AddToRoleAsync(user, RoleConstants.NewUserDefaultRole.ToString());
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

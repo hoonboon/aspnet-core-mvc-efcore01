@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using MyApp.Admin.Security.Public.Enums;
+using MyApp.Admin.Security.Public.PermissionControl.Policy;
 using MyApp.Common.Public.Exceptions;
 using MyApp.School.Public.Dtos;
 using MyApp.School.Public.Services;
@@ -11,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace MyApp.WebMvc03.Controllers.School
 {
-    [Authorize(Roles = "Manager")]
     public class DepartmentsController : Controller
     {
         private readonly ILogger<DepartmentsController> _logger;
@@ -23,6 +23,7 @@ namespace MyApp.WebMvc03.Controllers.School
             _logger = logger;
         }
 
+        [HasPermission(Permissions.DepartmentView)]
         // GET: Departments
         public async Task<IActionResult> Index(
             [FromServices] IDepartmentService service)
@@ -30,6 +31,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Index.cshtml", await service.ListAllDepartmentsAsync());
         }
 
+        [HasPermission(Permissions.DepartmentView)]
         // GET: Departments/Details/5
         public async Task<IActionResult> Details(int? id, [FromServices] IDepartmentService service)
         {
@@ -55,6 +57,7 @@ namespace MyApp.WebMvc03.Controllers.School
                 selectedInstructor);
         }
 
+        [HasPermission(Permissions.DepartmentAdd)]
         // GET: Departments/Create
         public async Task<IActionResult> Create([FromServices] IDepartmentService service)
         {
@@ -62,6 +65,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Create.cshtml");
         }
 
+        [HasPermission(Permissions.DepartmentAdd)]
         // POST: Departments/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -88,6 +92,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Create.cshtml", department);
         }
 
+        [HasPermission(Permissions.DepartmentEdit)]
         // GET: Departments/Edit/5
         public async Task<IActionResult> Edit(int? id, [FromServices] IDepartmentService service)
         {
@@ -105,6 +110,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Edit.cshtml", department);
         }
 
+        [HasPermission(Permissions.DepartmentEdit)]
         // POST: Departments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -145,6 +151,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Edit.cshtml", department);
         }
 
+        [HasPermission(Permissions.DepartmentDelete)]
         // GET: Departments/Delete/5
         public async Task<IActionResult> Delete(
             int? id, [FromServices] IDepartmentService service)
@@ -173,6 +180,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Delete.cshtml", department);
         }
 
+        [HasPermission(Permissions.DepartmentDelete)]
         // POST: Departments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

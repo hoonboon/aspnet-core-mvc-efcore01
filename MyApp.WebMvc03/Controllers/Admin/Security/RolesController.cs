@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyApp.Admin.Security.Public.Constants;
 using MyApp.Admin.Security.Public.Dtos;
+using MyApp.Admin.Security.Public.Enums;
+using MyApp.Admin.Security.Public.PermissionControl.Policy;
 using MyApp.Admin.Security.Public.Services;
 using MyApp.Common.Public.Exceptions;
 using MyApp.WebMvc03.Utils;
@@ -13,12 +15,14 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
     {
         private static readonly string _viewFolder = "/Views/Admin/Security/Roles/";
 
+        [HasPermission(Permissions.RoleView)]
         public async Task<IActionResult> Index([FromServices] IRoleService service)
         {
             var roles = await service.ListAllRolesAsync();
             return View($"{_viewFolder}Index.cshtml", roles);
         }
 
+        [HasPermission(Permissions.RoleView)]
         public async Task<IActionResult> Details(string id, [FromServices] IRoleService service)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -37,6 +41,7 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
             return View($"{_viewFolder}Details.cshtml", roleDto);
         }
 
+        [HasPermission(Permissions.RoleEdit)]
         public async Task<IActionResult> Edit(string id, [FromServices] IRoleService service)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -55,6 +60,7 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
             return View($"{_viewFolder}Edit.cshtml", roleDto);
         }
 
+        [HasPermission(Permissions.RoleEdit)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PostEdit(
@@ -97,6 +103,7 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
             return View($"{_viewFolder}Edit.cshtml", roleDto);
         }
 
+        [HasPermission(Permissions.RoleAdd)]
         public async Task<IActionResult> CreateCopy(string id, [FromServices] IRoleService service)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -115,6 +122,7 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
             return View($"{_viewFolder}CreateCopy.cshtml", roleDto);
         }
 
+        [HasPermission(Permissions.RoleAdd)]
         [HttpPost, ActionName("CreateCopy")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PostCreateCopy(
@@ -156,6 +164,7 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
             return View($"{_viewFolder}CreateCopy.cshtml", roleDto);
         }
 
+        [HasPermission(Permissions.RoleDelete)]
         public async Task<IActionResult> Delete(string id, [FromServices] IRoleService service)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -191,6 +200,7 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
             return View($"{_viewFolder}Delete.cshtml", roleDto);
         }
 
+        [HasPermission(Permissions.RoleDelete)]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(

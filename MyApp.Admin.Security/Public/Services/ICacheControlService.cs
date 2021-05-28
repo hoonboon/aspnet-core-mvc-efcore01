@@ -9,5 +9,7 @@ namespace MyApp.Admin.Security.Public.Services
     public interface ICacheControlService
     {
         Task UpdateLastRefreshTimeAsync(string cacheKey, bool commitChanges = true);
+
+        Task<long> GetLastRefreshTimeUtcAsync(string cacheKey);
     }
 }

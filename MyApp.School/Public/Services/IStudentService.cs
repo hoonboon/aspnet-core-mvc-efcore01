@@ -9,7 +9,7 @@ namespace MyApp.School.Public.Services
 {
     public interface IStudentService
     {
-        Task<PaginatedListDto<StudentListItem>> ListAllStudentsAsync(ListingFilterSortPageDto filterSortPageDto);
+        Task<PaginatedList<StudentListItem>> ListAllStudentsAsync(ListingFilterSortPageDto filterSortPageDto);
 
         Task<StudentDetailDto> GetStudentByIdForDetailAsync(int studentId);
 

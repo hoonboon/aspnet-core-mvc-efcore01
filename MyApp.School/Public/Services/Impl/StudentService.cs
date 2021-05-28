@@ -26,7 +26,7 @@ namespace MyApp.School.Public.Services.Impl
             _context = context;
         }
 
-        public async Task<PaginatedListDto<StudentListItem>> ListAllStudentsAsync(
+        public async Task<PaginatedList<StudentListItem>> ListAllStudentsAsync(
             ListingFilterSortPageDto filterSortPageDto)
         {
             // call this first to:

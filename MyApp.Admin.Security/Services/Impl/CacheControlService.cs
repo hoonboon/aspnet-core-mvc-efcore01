@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using MyApp.Admin.Security.Domains;
 using MyApp.Admin.Security.Public.Data;
+using MyApp.Admin.Security.Public.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyApp.Admin.Security.Public.Services.Impl
+namespace MyApp.Admin.Security.Services.Impl
 {
     public class CacheControlService : ICacheControlService
     {
@@ -17,6 +18,35 @@ namespace MyApp.Admin.Security.Public.Services.Impl
         {
             _logger = logger;
             _context = context;
+        }
+
+        public async Task<long> GetLastRefreshTimeUtcAsync(string cacheKey)
+        {
+            long result;
+            try
+            {
+                var currentEntry = await _context.FindAsync<CacheControl>(cacheKey);
+                if (currentEntry == null)
+                {
+                    currentEntry = new CacheControl
+                    {
+                        CacheKey = cacheKey,
+                        LastRefreshTimeUtc = DateTime.UtcNow.Ticks
+                    };
+                    _context.Add(currentEntry);
+                }
+
+                await _context.SaveChangesAsync();
+
+                result = currentEntry.LastRefreshTimeUtc;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to get LastRefreshTimeUtc for CacheKey: {cacheKey}");
+                throw ex;
+            }
+
+            return result;
         }
 
         public async Task UpdateLastRefreshTimeAsync(string cacheKey, bool commitChanges = true)

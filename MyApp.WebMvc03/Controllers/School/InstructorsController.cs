@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MyApp.Admin.Security.Public.Enums;
+using MyApp.Admin.Security.Public.PermissionControl.Policy;
 using MyApp.Common.Public.Exceptions;
 using MyApp.School.Public.Dtos;
 using MyApp.School.Public.Services;
@@ -11,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace MyApp.WebMvc03.Controllers.School
 {
-    [Authorize(Roles = "Manager")]
     public class InstructorsController : Controller
     {
         private readonly ILogger<InstructorsController> _logger;
@@ -23,6 +23,7 @@ namespace MyApp.WebMvc03.Controllers.School
             _logger = logger;
         }
 
+        [HasPermission(Permissions.InstructorView)]
         // GET: Instructors
         public async Task<IActionResult> Index(int? id, int? courseId, [FromServices] IInstructorService service)
         {
@@ -53,6 +54,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Index.cshtml", viewModel);
         }
 
+        [HasPermission(Permissions.InstructorView)]
         // GET: Instructors/Details/5
         public async Task<IActionResult> Details(int? id, [FromServices] IInstructorService service)
         {
@@ -76,6 +78,7 @@ namespace MyApp.WebMvc03.Controllers.School
             ViewData["Courses"] = await service.ListAllCourseOptionsAsync(currentAssignedCoursesId);
         }
 
+        [HasPermission(Permissions.InstructorAdd)]
         // GET: Instructors/Create
         public async Task<IActionResult> Create([FromServices] IInstructorService service)
         {
@@ -83,6 +86,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Create.cshtml");
         }
 
+        [HasPermission(Permissions.InstructorAdd)]
         // POST: Instructors/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -116,6 +120,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Create.cshtml", instructorDto);
         }
 
+        [HasPermission(Permissions.InstructorEdit)]
         // GET: Instructors/Edit/5
         public async Task<IActionResult> Edit(int? id, [FromServices] IInstructorService service)
         {
@@ -135,6 +140,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Edit.cshtml", instructor);
         }
 
+        [HasPermission(Permissions.InstructorEdit)]
         // POST: Instructors/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -173,6 +179,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Edit.cshtml", instructorDto);
         }
 
+        [HasPermission(Permissions.InstructorDelete)]
         // GET: Instructors/Delete/5
         public async Task<IActionResult> Delete(int? id, [FromServices] IInstructorService service)
         {
@@ -200,6 +207,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Delete.cshtml", instructor);
         }
 
+        [HasPermission(Permissions.InstructorDelete)]
         // POST: Instructors/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

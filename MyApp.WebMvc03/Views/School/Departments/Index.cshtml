@@ -6,9 +6,12 @@
 
 <h1>Departments</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (User.HasPermission(Permissions.DepartmentAdd))
+{
+    <p>
+        <a class="btn btn-primary btn-sm mb-1" asp-action="Create">Create New</a>
+    </p>
+}
 <table class="table">
     <thead>
         <tr>
@@ -28,26 +31,36 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td class="text-right">
-                @Html.DisplayFor(modelItem => item.Budget)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StartDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.InstructorName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.DepartmentId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.DepartmentId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.DepartmentId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td class="text-right">
+                    @Html.DisplayFor(modelItem => item.Budget)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.InstructorName)
+                </td>
+                <td>
+                    @if (User.HasPermission(Permissions.DepartmentView))
+                    {
+                        <a asp-action="Details" class="btn btn-primary btn-sm mb-1" asp-route-id="@item.DepartmentId">Details</a>
+                    }
+                    @if (User.HasPermission(Permissions.DepartmentEdit))
+                    {
+                        <a asp-action="Edit" class="btn btn-primary btn-sm mb-1" asp-route-id="@item.DepartmentId">Edit</a>
+                    }
+                    @if (User.HasPermission(Permissions.DepartmentDelete))
+                    {
+                        <a asp-action="Delete" class="btn btn-primary btn-sm mb-1" asp-route-id="@item.DepartmentId">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

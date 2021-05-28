@@ -9,7 +9,6 @@ namespace MyApp.Admin.Security.Public.Enums
     {
         SuperAdmin,
         Admin,
-        Manager,
-        Staff
+        User
     }
 }

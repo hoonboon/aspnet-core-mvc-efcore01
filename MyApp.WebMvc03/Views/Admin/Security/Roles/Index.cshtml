@@ -35,10 +35,20 @@
                         <td>@role.Name</td>
                         <td>@role.RoleDescription</td>
                         <td>
-                            <a asp-action="Details" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Details</a>
-                            <a asp-action="Edit" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Edit</a>
-                            <a asp-action="CreateCopy" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Create Copy</a>
-                            @if (!role.IsBuiltInRole)
+                            @if (User.HasPermission(Permissions.RoleView))
+                            {
+                                <a asp-action="Details" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Details</a>
+                            }
+                            @if (User.HasPermission(Permissions.RoleEdit))
+                            {
+                                <a asp-action="Edit" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Edit</a>
+                            }
+                            @if (User.HasPermission(Permissions.RoleAdd))
+                            {
+                                <a asp-action="CreateCopy" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Create Copy</a>
+                            }
+                            @if (!role.IsBuiltInRole
+                                && User.HasPermission(Permissions.RoleDelete))
                             {
                                 <a asp-action="Delete" class="btn btn-primary btn-sm mb-1" asp-route-id="@role.RoleId">Delete</a>
                             }

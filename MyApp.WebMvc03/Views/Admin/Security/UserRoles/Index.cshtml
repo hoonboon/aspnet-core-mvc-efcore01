@@ -1,15 +1,8 @@
-﻿@using MyApp.Admin.Security.Public.Enums
-@using MyApp.Admin.Security.Public.Dtos
+﻿@using MyApp.Admin.Security.Public.Dtos
 @model List<UserRoleData>
 @{
     ViewData["Title"] = "User Roles Management";
     Layout = "~/Views/Shared/_Layout.cshtml";
-
-    var hasSuperAdminRole = false;
-    if (User.IsInRole(Roles.SuperAdmin.ToString()))
-    {
-        hasSuperAdminRole = true;
-    }
 }
 <h1>User Roles Management</h1>
 <br>
@@ -20,10 +13,7 @@
             <th>Last Name</th>
             <th>Email</th>
             <th>Roles</th>
-            @if (hasSuperAdminRole)
-            {
-                <th>Action</th>
-            }
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -34,12 +24,14 @@
                 <td>@user.LastName</td>
                 <td>@user.Email</td>
                 <td>@string.Join(" , ", user.Roles.ToList())</td>
-                @if (hasSuperAdminRole)
-                {
-                    <td>
-                        <a class="btn btn-primary" asp-controller="UserRoles" asp-action="Manage" asp-route-userId="@user.UserId">Manage User Roles</a>
-                    </td>
-                }
+                <td>
+                    @if (User.HasPermission(Permissions.UserRoleManage))
+                    {
+                        <a class="btn btn-primary" asp-controller="UserRoles" asp-action="Manage" asp-route-userId="@user.UserId">
+                            Manage
+                        </a>
+                    }
+                </td>
             </tr>
         }
     </tbody>

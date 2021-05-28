@@ -70,7 +70,13 @@
     </div>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.StudentId">Edit</a> |
-    <a asp-action="Delete" asp-route-id="@Model.StudentId">Delete</a> |
-    <a asp-action="Index">Back to List</a>
+    @if (User.HasPermission(Permissions.StudentEdit))
+    {
+        <a asp-action="Edit" class="btn btn-primary mb-1" asp-route-id="@Model.StudentId">Edit</a>
+    }
+    @if (User.HasPermission(Permissions.StudentDelete))
+    {
+        <a asp-action="Delete" class="btn btn-primary mb-1" asp-route-id="@Model.StudentId">Delete</a>
+    }
+    <p><a asp-action="Index">Back to List</a></p>
 </div>

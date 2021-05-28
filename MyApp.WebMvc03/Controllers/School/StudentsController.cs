@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MyApp.Admin.Security.Public.Enums;
+using MyApp.Admin.Security.Public.PermissionControl.Policy;
 using MyApp.Common.Public.Dtos;
 using MyApp.Common.Public.Exceptions;
 using MyApp.School.Public.Dtos;
@@ -11,7 +12,6 @@ using System.Threading.Tasks;
 
 namespace MyApp.WebMvc03.Controllers.School
 {
-    [Authorize(Roles = "Staff")]
     public class StudentsController : Controller
     {
         private readonly ILogger<StudentsController> _logger;
@@ -23,18 +23,19 @@ namespace MyApp.WebMvc03.Controllers.School
             _logger = logger;
         }
 
+        [HasPermission(Permissions.StudentView)]
         // GET: Students
         public async Task<IActionResult> Index(
             ListingFilterSortPageDto filterSortPageDto, [FromServices] IStudentService service)
         {
-            PaginatedListDto<StudentListItem> paginatedList = null;
+            PaginatedList<StudentListItem> paginatedList = null;
 
             try
             {
                 paginatedList = await service.ListAllStudentsAsync(filterSortPageDto);
 
                 // set the final page index based on the latest database records available
-                filterSortPageDto.PageIndex = paginatedList.PageIndex;
+                filterSortPageDto.PageIndex = paginatedList.PaginationInfo.PageIndex;
             }
             catch (GeneralException ex)
             {
@@ -49,15 +50,12 @@ namespace MyApp.WebMvc03.Controllers.School
                 ViewBag.Message = Constants.ERROR_MESSAGE_STANDARD + ": " + ex.Message;
             }
 
-            var studentListDto = new StudentListDto
-            {
-                FilterSortPageValues = filterSortPageDto,
-                Listing = paginatedList
-            };
+            var studentListDto = new StudentListDto(paginatedList, filterSortPageDto);
 
             return View($"{_viewFolder}Index.cshtml", studentListDto);
         }
 
+        [HasPermission(Permissions.StudentView)]
         // GET: Students/Details/5
         public async Task<IActionResult> Details(int? id, [FromServices] IStudentService service)
         {
@@ -75,12 +73,14 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Details.cshtml", student);
         }
 
+        [HasPermission(Permissions.StudentAdd)]
         // GET: Students/Create
         public IActionResult Create()
         {
             return View($"{_viewFolder}Create.cshtml");
         }
 
+        [HasPermission(Permissions.StudentAdd)]
         // POST: Students/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -108,6 +108,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Create.cshtml", student);
         }
 
+        [HasPermission(Permissions.StudentEdit)]
         // GET: Students/Edit/5
         public async Task<IActionResult> Edit(int? id, [FromServices] IStudentService service)
         {
@@ -124,6 +125,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Edit.cshtml", student);
         }
 
+        [HasPermission(Permissions.StudentEdit)]
         [HttpPost, ActionName("Edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PostEdit(
@@ -158,6 +160,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Edit.cshtml", studentDto);
         }
 
+        [HasPermission(Permissions.StudentDelete)]
         // GET: Students/Delete/5
         public async Task<IActionResult> Delete(
             int? id, [FromServices] IStudentService service)
@@ -186,6 +189,7 @@ namespace MyApp.WebMvc03.Controllers.School
             return View($"{_viewFolder}Delete.cshtml", student);
         }
 
+        [HasPermission(Permissions.StudentDelete)]
         // POST: Students/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]

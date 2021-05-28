@@ -6,11 +6,14 @@ using System.Text;
 
 namespace MyApp.School.Public.Dtos
 {
-    public class StudentListDto
+    public class StudentListDto : BasePaginatedListDto<StudentListItem>
     {
-        public PaginatedListDto<StudentListItem> Listing { get; set; }
+        public StudentListDto(PaginatedList<StudentListItem> listing, ListingFilterSortPageDto filterSortPageValues)
+            : base(listing, filterSortPageValues)
+        {
+            
+        }
 
-        public ListingFilterSortPageDto FilterSortPageValues { get; set; }
     }
 
     public class StudentListItem

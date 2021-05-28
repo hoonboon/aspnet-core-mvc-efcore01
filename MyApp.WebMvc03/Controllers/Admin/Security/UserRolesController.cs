@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyApp.Admin.Security.Public.Constants;
 using MyApp.Admin.Security.Public.Dtos;
+using MyApp.Admin.Security.Public.Enums;
+using MyApp.Admin.Security.Public.PermissionControl.Policy;
 using MyApp.Admin.Security.Public.Services;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,14 +15,14 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
     {
         private static readonly string _viewFolder = "/Views/Admin/Security/UserRoles/";
 
-        [Authorize(Roles = "Admin")]
+        [HasPermission(Permissions.UserRoleView)]
         public async Task<IActionResult> Index([FromServices] IUserRoleService service)
         {
             var userRolesList = await service.ListAllUsersWithRolesAsync();
             return View($"{_viewFolder}Index.cshtml", userRolesList);
         }
 
-        [Authorize(Roles = "SuperAdmin")]
+        [HasPermission(Permissions.UserRoleManage)]
         public async Task<IActionResult> Manage(string userId, [FromServices] IUserRoleService service)
         {
             ViewBag.userId = userId;
@@ -34,8 +37,12 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
             return View($"{_viewFolder}Manage.cshtml", model);
         }
 
+        [HasPermission(Permissions.UserRoleManage)]
         [HttpPost]
-        public async Task<IActionResult> Manage(List<UserRoleAssignedData> model, string userId, [FromServices] IUserRoleService service)
+        public async Task<IActionResult> Manage(
+            List<UserRoleAssignedData> model, string userId, 
+            [FromServices] IUserRoleService service,
+            [FromServices] ICacheControlService cacheService)
         {
             var user = await service.GetUserProfileAsync(userId);
             if (user == null)
@@ -43,6 +50,9 @@ namespace MyApp.WebMvc03.Controllers.Admin.Security
                 ViewBag.ErrorMessage = $"User with Id = {userId} cannot be found";
                 return View("NotFound");
             }
+            
+            await cacheService.UpdateLastRefreshTimeAsync(CacheKeys.USER_PERMISSIONS, false);
+
             var roles = await service.ListRolesAssignedToUserAsync(user);
             var result = await service.RemoveRolesFromUserAsync(user, roles);
             if (!result.Succeeded)

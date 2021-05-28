@@ -4,13 +4,14 @@ using Microsoft.Extensions.Logging;
 using MyApp.Admin.Security.Domains;
 using MyApp.Admin.Security.Public.Dtos;
 using MyApp.Admin.Security.Public.Enums;
+using MyApp.Admin.Security.Public.Services;
 using MyApp.Common.Public.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MyApp.Admin.Security.Public.Services.Impl
+namespace MyApp.Admin.Security.Services.Impl
 {
     public class RoleService : IRoleService
     {

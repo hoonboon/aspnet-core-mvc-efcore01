@@ -37,6 +37,13 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model.DepartmentId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    @if (User.HasPermission(Permissions.DepartmentEdit))
+    {
+        <a asp-action="Edit" class="btn btn-primary btn-sm mb-1" asp-route-id="@Model.DepartmentId">Edit</a>
+    }
+    @if (User.HasPermission(Permissions.DepartmentDelete))
+    {
+        <a asp-action="Delete" class="btn btn-primary btn-sm mb-1" asp-route-id="@Model.DepartmentId">Delete</a>
+    }
+    <p><a asp-action="Index">Back to List</a></p>
 </div>

@@ -6,9 +6,12 @@
 
 <h1>Instructors</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (User.HasPermission(Permissions.InstructorAdd))
+{
+    <p>
+        <a class="btn btn-primary btn-sm" asp-action="Create">Create New</a>
+    </p>
+}
 <table class="table table-sm mb-4">
     <thead>
         <tr>
@@ -53,9 +56,15 @@
                     </td>
                     <td>
                         <a asp-action="Index" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Select</a>
-                        <a asp-action="Edit" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Edit</a>
                         <a asp-action="Details" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Details</a>
-                        <a asp-action="Delete" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Delete</a>
+                        @if (User.HasPermission(Permissions.InstructorEdit))
+                        {
+                            <a asp-action="Edit" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Edit</a>
+                        }
+                        @if (User.HasPermission(Permissions.InstructorDelete))
+                        {
+                            <a asp-action="Delete" class="btn btn-primary btn-sm" asp-route-id="@item.InstructorId">Delete</a>
+                        }
                     </td>
                 </tr>
             }
@@ -75,10 +84,10 @@
 <table class="table table-sm mb-4">
     <thead>
         <tr>
-            <th></th>
             <th>Number</th>
             <th>Title</th>
             <th>Department</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -93,9 +102,6 @@
                 }
                 <tr class="@selectedRow">
                     <td>
-                        @Html.ActionLink("Select", "Index", new { courseId = item.CourseId }, new { @class = "btn btn-primary btn-sm" })
-                    </td>
-                    <td>
                         @item.CourseId
                     </td>
                     <td>
@@ -103,6 +109,9 @@
                     </td>
                     <td>
                         @item.DepartmentName
+                    </td>
+                    <td>
+                        @Html.ActionLink("Select", "Index", new { courseId = item.CourseId }, new { @class = "btn btn-primary btn-sm" })
                     </td>
                 </tr>
             }

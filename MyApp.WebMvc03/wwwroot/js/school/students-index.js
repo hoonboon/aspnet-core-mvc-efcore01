@@ -1,57 +1,78 @@
 ﻿'use strict';
 
-var StudentList = (function ($) {
-    return {
-        submitForm: function () {
-            $('#sort-filter-form').submit();
-        },
+var DataTable = (function ($) {
 
-        setFilterByInputType: function(filterElem) {
-            var filterBy = Number.parseInt($(filterElem).find(":selected").val());
-            var currentInputType = $('#FilterValue').attr('type');
-            
-            if ((filterBy == 3 || filterBy == 4)
-                && currentInputType != 'date') {
-                $('#FilterValue').attr('type', 'date');
-                $('#FilterValue').val('');
-            } else if (!(filterBy == 3 || filterBy == 4)
-                && currentInputType != 'text') {
-                $('#FilterValue').attr('type', 'text');
-                $('#FilterValue').val('');
-            }
+    var TempObj = function () { };
 
-            if (filterBy == 0) {
-                $('#FilterValue').attr('readonly', true);
-                $('#FilterValue').val('');
-            } else {
-                $('#FilterValue').attr('readonly', false);
-            }
-        },
+    // Inherit from CommonDataTable defined in js/common/data-table.js
+    TempObj.prototype = new CommonDataTable();
 
-        filterByHasChanged: function (filterElem) {
-            this.setFilterByInputType(filterElem);
-        },
+    // Override parent function
+    TempObj.prototype.setFilterByInputType = function (filterElem) {
+        var filterBy = Number.parseInt($(filterElem).find(":selected").val());
+        var currentInputType = $('#FilterValue').attr('type');
+        
+        // TODO: Override this function in the child object and change input type as required
+        if ((filterBy == 3 || filterBy == 4)
+            && currentInputType != 'date') {
+            $('#FilterValue').attr('type', 'date');
+            $('#FilterValue').val('');
+        } else if (!(filterBy == 3 || filterBy == 4)
+            && currentInputType != 'text') {
+            $('#FilterValue').attr('type', 'text');
+            $('#FilterValue').val('');
+        }
 
-        submitSort: function (newSortBy) {
-            var sortBy = Number.parseInt($('#SortBy').val());
-            var sortAscending = $('#SortAscending').val().toLowerCase() == 'true';
-
-            if (sortBy === newSortBy) {
-                $('#SortAscending').val(!sortAscending);
-            }
-            else {
-                $('#SortAscending').val(true);
-            }
-
-            $('#SortBy').val(newSortBy);
-
-            this.submitForm();
-        },
-
-        submitGoToPage: function (newPageIndex) {
-            $('#PageIndex').val(newPageIndex);
-            this.submitForm();
-        },
+        if (filterBy == 0) {
+            $('#FilterValue').attr('readonly', true);
+            $('#FilterValue').val('');
+        } else {
+            $('#FilterValue').attr('readonly', false);
+        }
     };
 
+    return TempObj;
+
+}(window.jQuery));
+
+(function ($) {
+    $(document).ready(function () {
+
+        var dataTable = new DataTable();
+
+        $('#FilterBy').change(function () {
+            dataTable.filterByHasChanged(this);
+        });
+
+        $('#BtnSubmitSearch').click(function () {
+            dataTable.submitForm();
+        });
+
+        $('#SortField1').click(function () {
+            dataTable.submitSort(sortFields.SortField1);
+        });
+
+        $('#SortField2').click(function () {
+            dataTable.submitSort(sortFields.SortField2);
+        });
+
+        $('#SortField3').click(function () {
+            dataTable.submitSort(sortFields.SortField3);
+        });
+
+        $('#BtnPreviouPage').click(function () {
+            dataTable.submitGoToPage(prevPageNo);
+            return false;
+        });
+
+        $('#BtnNextPage').click(function () {
+            dataTable.submitGoToPage(nextPageNo);
+            return false;
+        });
+
+        $('#PageSize').change(function () {
+            dataTable.submitForm();
+        });
+
+    });
 }(window.jQuery));

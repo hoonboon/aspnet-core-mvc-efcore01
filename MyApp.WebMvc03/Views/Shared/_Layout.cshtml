@@ -38,50 +38,68 @@
                         </li>
                         @if (User.Identity.IsAuthenticated)
                         {
-                            @if (User.IsInRole(Roles.Staff.ToString())
-                                || User.IsInRole(Roles.Manager.ToString()))
+                            @if (User.HasPermission(Permissions.StudentView)
+                              || User.HasPermission(Permissions.CourseView)
+                              || User.HasPermission(Permissions.InstructorView)
+                              || User.HasPermission(Permissions.DepartmentView))
                             {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button"
-                                   data-toggle="dropdown" aria-expanded="false">
-                                    School Management
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-controller="Students" asp-action="Index">Students</a>
-                                    </li>
-                                    @if (User.IsInRole(Roles.Manager.ToString()))
-                                    {
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-controller="Courses" asp-action="Index">Courses</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-controller="Instructors" asp-action="Index">Instructors</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-controller="Departments" asp-action="Index">Departments</a>
-                                    </li>
-                                    }
-                                </ul>
-                            </li>
-                            }   
-                            @if (User.IsInRole(Roles.Admin.ToString()))
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button"
+                                       data-toggle="dropdown" aria-expanded="false">
+                                        School
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                                        @if (User.HasPermission(Permissions.StudentView))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-area="" asp-controller="Students" asp-action="Index">Students</a>
+                                            </li>
+                                        }
+                                        @if (User.HasPermission(Permissions.CourseView))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-area="" asp-controller="Courses" asp-action="Index">Courses</a>
+                                            </li>
+                                        }
+                                        @if (User.HasPermission(Permissions.InstructorView))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-area="" asp-controller="Instructors" asp-action="Index">Instructors</a>
+                                            </li>
+                                        }
+                                        @if (User.HasPermission(Permissions.DepartmentView))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-area="" asp-controller="Departments" asp-action="Index">Departments</a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </li>
+                            }
+                            @if (User.HasPermission(Permissions.RoleView)
+                               || User.HasPermission(Permissions.UserRoleView))
                             {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button"
-                                   data-toggle="dropdown" aria-expanded="false">
-                                    Administration
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-controller="Roles" asp-action="Index">Roles Management</a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item" asp-area="" asp-controller="UserRoles" asp-action="Index">User Roles Management</a>
-                                    </li>
-                                </ul>
-                            </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button"
+                                       data-toggle="dropdown" aria-expanded="false">
+                                        Admin
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                                        @if (User.HasPermission(Permissions.RoleView))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-area="" asp-controller="Roles" asp-action="Index">Roles</a>
+                                            </li>
+                                            @*<li><hr class="dropdown-divider"></li>*@
+                                        }
+                                        @if (User.HasPermission(Permissions.UserRoleView))
+                                        {
+                                            <li>
+                                                <a class="dropdown-item" asp-area="" asp-controller="UserRoles" asp-action="Index">User Roles</a>
+                                            </li>
+                                        }
+                                    </ul>
+                                </li>
                             }
                         }
                     </ul>
@@ -123,20 +141,20 @@
     </environment>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
-    
+
+    @RenderSection("Scripts", required: false)
+
     @*Render any script files to be included for current page load*@
-    @{ 
+    @{
         var scriptNameList = ViewData["ScriptNameList"] as IEnumerable<string>;
 
         if (scriptNameList != null && scriptNameList.Any())
         {
-            foreach(var scriptName in scriptNameList)
+            foreach (var scriptName in scriptNameList)
             {
-        <script src="@scriptName" asp-append-version="true"></script>
+                <script src="@scriptName" asp-append-version="true"></script>
             }
         }
     }
-
-    @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -5,41 +5,44 @@
 
 @{
     ViewData["Title"] = "Students";
-    ViewData["ScriptNameList"] = new string[] { "~/js/school/students-index.js" };
+    ViewData["ScriptNameList"] = new string[] { 
+        "~/js/common/data-table.js",
+        "~/js/school/students-index.js"
+    };
 }
 
 <h1>Students</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-
-<form asp-action="Index" method="get" id="sort-filter-form">
+<form asp-action="Index" method="get" id="DataTableForm">
     <input type="hidden" asp-for="FilterSortPageValues.PreviousStateValue" id="PreviousStateValue" name="PreviousStateValue" />
     <input type="hidden" asp-for="FilterSortPageValues.PageIndex" id="PageIndex" name="PageIndex" />
     <input type="hidden" asp-for="FilterSortPageValues.SortBy" id="SortBy" name="SortBy" />
     <input type="hidden" asp-for="FilterSortPageValues.SortAscending" id="SortAscending" name="SortAscending" />
     <div class="form-row">
+        @if (User.HasPermission(Permissions.StudentAdd))
+        {
+            <div class="col-auto">
+                <a class="btn btn-primary mb-1" asp-action="Create">Create New</a>
+            </div>
+        }
         <div class="col-auto">
             <select asp-for="FilterSortPageValues.FilterBy" id="FilterBy" name="FilterBy"
                     asp-items="Html.GetEnumSelectList<StudentsFilterOptions>()"
-                    class="form-control mb-2"
-                    onchange="javascript: StudentList.filterByHasChanged(this);"></select>
+                    class="form-control mb-1"></select>
         </div>
         <div class="col-auto">
             <input value="@Model.FilterSortPageValues.FilterValue" id="FilterValue" name="FilterValue"
                    type="@( (Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.EnrollmentDateAfter || Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.EnrollmentDateBefore) ? "date" : "text")"
                    @(Model.FilterSortPageValues.FilterBy == (int)StudentsFilterOptions.NoFilter ? "readonly" : "")
-                   class="form-control mb-2">
+                   class="form-control mb-1">
         </div>
         <div class="col-auto">
-            <button type="submit" class="btn btn-primary mb-2"
-                    onclick="javascript: StudentList.submitForm();">
+            <button type="submit" class="btn btn-primary mb-1" id="BtnSubmitSearch">
                 Search
             </button>
         </div>
         <div class="col-auto">
-            <a asp-action="Index" class="btn btn-primary mb-2">Reset</a>
+            <a asp-action="Index" class="btn btn-primary mb-1">Reset</a>
         </div>
     </div>
 
@@ -48,17 +51,17 @@
             <thead>
                 <tr>
                     <th>
-                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.LastName));">
+                        <a class="sortable" id="SortField1">
                             Last Name
                         </a>
                     </th>
                     <th>
-                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.FirstMidName));">
+                        <a class="sortable" id="SortField2">
                             First Name
                         </a>
                     </th>
                     <th>
-                        <a class="sortable" onclick="javascript: StudentList.submitSort(@((int)StudentsSortByOptions.EnrollmentDate));">
+                        <a class="sortable" id="SortField3">
                             Enrollment Date
                         </a>
                     </th>
@@ -81,9 +84,15 @@
                                 @Html.DisplayFor(modelItem => item.EnrollmentDate)
                             </td>
                             <td class="text-nowrap">
-                                <a asp-action="Edit" asp-route-id="@item.StudentId">Edit</a> |
-                                <a asp-action="Details" asp-route-id="@item.StudentId">Details</a> |
-                                <a asp-action="Delete" asp-route-id="@item.StudentId">Delete</a>
+                                <a asp-action="Details" class="btn btn-outline-secondary btn-sm" asp-route-id="@item.StudentId">Details</a>
+                                @if (User.HasPermission(Permissions.StudentEdit))
+                                {
+                                    <a asp-action="Edit" class="btn btn-outline-secondary btn-sm" asp-route-id="@item.StudentId">Edit</a>
+                                }
+                                @if (User.HasPermission(Permissions.StudentDelete))
+                                {
+                                    <a asp-action="Delete" class="btn btn-outline-secondary btn-sm" asp-route-id="@item.StudentId">Delete</a>
+                                }
                             </td>
                         </tr>
                     }
@@ -96,57 +105,26 @@
                         </td>
                     </tr>
                 }
-                </tbody>
+            </tbody>
         </table>
     </div>
 
-    @{
-        var prevDisabled = "disabled";
-        var nextDisabled = "disabled";
-
-        var currentPageNo = 1;
-        var totalPages = 1;
-        var prevPageNo = 0;
-        var nextPageNo = 0;
-
-        if (Model.Listing != null)
-        {
-            prevDisabled = Model.Listing.HasPreviousPage ? "" : "disabled";
-            nextDisabled = Model.Listing.HasNextPage ? "" : "disabled";
-
-            currentPageNo = Model.Listing.PageIndex;
-            totalPages = @Model.Listing.TotalPages;
-            prevPageNo = currentPageNo - 1;
-            nextPageNo = currentPageNo + 1;
-        }
-    }
-    <div class="row">
-        <div class="text-left col-sm-4">
-            <a class="btn btn-primary @prevDisabled" href="#"
-                onclick="javascript: StudentList.submitGoToPage(@prevPageNo); return false;">
-                Previous
-            </a>
-            <a class="btn btn-primary @nextDisabled" href="#"
-                onclick="javascript: StudentList.submitGoToPage(@nextPageNo); return false;">
-                Next
-            </a>
-        </div>
-        <div class="text-center font-weight-bold col-sm-4 mb-2 mt-2">
-            Page @currentPageNo of @totalPages
-        </div>
-        <div class="font-weight-bold col-sm-4">
-            <div class="row">
-                <div class="col-auto">
-                    <select asp-for="FilterSortPageValues.PageSize" id="PageSize" name="PageSize"
-                            asp-items="Html.GetEnumSelectList<PageSizeOptions>()"
-                            class="form-control m-0"
-                            onchange="javascript: StudentList.submitForm();"></select>
-                </div>
-                <div class="col-auto">
-                    Rows Per Page
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <partial name="_PaginationPartial" model="Model.Listing.PaginationInfo" />
+    
 </form>
+
+@section Scripts 
+{
+    <script>
+        @* set server side values for use in subsequent js files *@
+        var sortFields = {
+            SortField1: @((int)StudentsSortByOptions.LastName),
+            SortField2: @((int)StudentsSortByOptions.FirstMidName),
+            SortField3: @((int)StudentsSortByOptions.EnrollmentDate)
+        };
+
+        var prevPageNo = @(Model.Listing.PaginationInfo.TotalPages - 1);
+        var nextPageNo = @(Model.Listing.PaginationInfo.TotalPages + 1);
+    </script>
+
+}

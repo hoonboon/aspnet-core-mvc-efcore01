@@ -6,9 +6,12 @@
 
 <h1>Courses</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if (User.HasPermission(Permissions.CourseAdd))
+{
+    <p>
+        <a class="btn btn-primary btn-sm mb-1" asp-action="Create">Create New</a>
+    </p>
+}
 <table class="table table-sm">
     <thead>
         <tr>
@@ -28,26 +31,33 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CourseId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Title)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Credits)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DepartmentName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.CourseId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.CourseId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.CourseId">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CourseId)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Credits)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DepartmentName)
+                </td>
+                <td>
+                    <a asp-action="Details" class="btn btn-primary btn-sm mb-1" asp-route-id="@item.CourseId">Details</a>
+                    @if (User.HasPermission(Permissions.CourseEdit))
+                    {
+                        <a asp-action="Edit" class="btn btn-primary btn-sm mb-1" asp-route-id="@item.CourseId">Edit</a>
+                    }
+                    @if (User.HasPermission(Permissions.CourseDelete))
+                    {
+                        <a asp-action="Delete" class="btn btn-primary btn-sm mb-1" asp-route-id="@item.CourseId">Delete</a>
+                    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
