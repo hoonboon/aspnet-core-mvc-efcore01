@@ -75,9 +75,9 @@ namespace MyApp.Admin.Security.Public.Extensions
 
         public static void ConfigureCookiesForExtraAuth(this IServiceCollection services)
         {
-            // Event - Permissions and DataKey set up, provides User Impersonation + possible "RefreshClaims"
-            services.AddDataProtection();   //DataProtection is needed to encrypt the data in the Impersonation cookie
+            // Event - Permissions set up, provides User Impersonation + possible "RefreshClaims"
             IAuthCookieValidate validateAsyncVersion = new AuthCookieValidateEverything();
+            
             //We need two events for impersonation, so we do this here
             services.ConfigureApplicationCookie(options =>
             {

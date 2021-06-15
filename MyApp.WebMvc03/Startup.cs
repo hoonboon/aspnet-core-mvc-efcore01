@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +16,7 @@ using MyApp.Admin.Security.Public.PermissionControl.Policy;
 using MyApp.Admin.Security.Public.Services;
 using MyApp.School.Public.Services;
 using MyApp.WebMvc03.Data;
+using MyApp.WebMvc03.Utils;
 using NetCore.AutoRegisterDi;
 using System;
 using System.Linq;
@@ -47,27 +49,34 @@ namespace MyApp.WebMvc03
             // Extension to register all the databases context used in this app
             services.RegisterDatabases(Configuration, _env);
 
+            // using Microsoft.AspNetCore.DataProtection;
+            services.AddDataProtection()
+                // this allows clustered servers access to the same set of keys
+                .PersistKeysToDbContext<SecurityDbContext>(); 
+
             // must add this after scaffold Identity
             services.AddIdentity<UserProfile, CustomRole>(options => options.SignIn.RequireConfirmedAccount = true)
                     .AddEntityFrameworkStores<SecurityDbContext>()
                     .AddDefaultUI()
                     .AddDefaultTokenProviders();
 
-            if (_env.IsDevelopment())
+            // TODO: use Redis/ Couchbase/ NCache if faster
+            services.AddDistributedSqlServerCache(options =>
             {
-                services.AddDistributedMemoryCache();
-            }
-            else
-            {
-                services.AddDistributedSqlServerCache(options =>
-                {
-                    options.ConnectionString =
-                        Configuration.GetConnectionString("ConnStr_DistCache");
-                    options.SchemaName = "dbo";
-                    options.TableName = "AppCache";
-                });
-            }
+                options.ConnectionString =
+                    Configuration.GetConnectionString("ConnStr_DistCache");
+                options.SchemaName = "dbo";
+                options.TableName = "AppCache";
+            });
 
+            services.AddControllersWithViews()
+                .AddSessionStateTempDataProvider();
+            services.AddRazorPages()
+                .AddSessionStateTempDataProvider();
+
+            // TODO: Will session degrade app performance with any form of locking/ blocking/ synchronous access?
+            // - session uses cache as the backing store
+            // - need to use cache directly instead to store session values to improve performance??
             services.AddSession(options =>
             {
                 options.Cookie.Name = ".MyApp.WebMvc03.Session";
@@ -77,9 +86,6 @@ namespace MyApp.WebMvc03
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.Cookie.SameSite = SameSiteMode.Strict;
             });
-
-            services.AddControllersWithViews();
-            services.AddRazorPages();
 
             //Register the Permission policy handlers
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
@@ -136,11 +142,12 @@ namespace MyApp.WebMvc03
 
             app.UseCookiePolicy();
 
-            app.UseSession();
-
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            //app.UseSession();
+            app.UseAsyncSession();
 
             //This should come AFTER the app.UseAuthentication() call
             //If UpdateCookieOnChange this adds a header which has the time that the user's claims were updated

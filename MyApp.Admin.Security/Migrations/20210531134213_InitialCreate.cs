@@ -24,6 +24,21 @@ namespace MyApp.Admin.Security.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DataProtectionKey",
+                schema: "Security",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FriendlyName = table.Column<string>(nullable: true),
+                    Xml = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DataProtectionKey", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Role",
                 schema: "Security",
                 columns: table => new
@@ -241,6 +256,10 @@ namespace MyApp.Admin.Security.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CacheControl",
+                schema: "Security");
+
+            migrationBuilder.DropTable(
+                name: "DataProtectionKey",
                 schema: "Security");
 
             migrationBuilder.DropTable(

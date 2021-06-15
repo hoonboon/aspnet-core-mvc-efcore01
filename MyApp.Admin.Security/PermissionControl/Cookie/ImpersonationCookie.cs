@@ -11,17 +11,17 @@ namespace MyApp.Admin.Security.PermissionControl.Cookie
     {
         private const string CookieName = "UserImpersonation";
 
+        // https://docs.microsoft.com/en-us/aspnet/core/security/data-protection/consumer-apis/purpose-strings?view=aspnetcore-3.1
+        public const string EncryptPurpose = "MyApp.Admin.Security.PermissionControl.Cookie.ImpersonationCookie";
+
         private readonly HttpContext _httpContext;
         private readonly IDataProtectionProvider _protectionProvider;
         private readonly CookieOptions _options;
-
-        public string EncryptPurpose { get; private set; }
-
+        
         public ImpersonationCookie(HttpContext httpContext, IDataProtectionProvider protectionProvider)
         {
             _httpContext = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             _protectionProvider = protectionProvider; //Can be null
-            EncryptPurpose = "hffhegse432!&2!jbK!K3wqqqagg3bbassdewdsgfedgbfdewe13c";
             _options = new CookieOptions
             {
                 Secure = false,  //In real life you would want this to be true, but for this demo I allow http

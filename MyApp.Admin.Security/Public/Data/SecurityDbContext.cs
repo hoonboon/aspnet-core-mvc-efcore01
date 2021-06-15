@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ namespace MyApp.Admin.Security.Public.Data
      */
 
     // must extend IdentityDbContext first before being re-used to Scaffold Identity
-    public class SecurityDbContext : IdentityDbContext<UserProfile, CustomRole, string>
+    public class SecurityDbContext : IdentityDbContext<UserProfile, CustomRole, string>, IDataProtectionKeyContext
     {
         public static readonly string DbSchemaName = "Security";
 
@@ -37,6 +38,9 @@ namespace MyApp.Admin.Security.Public.Data
         }
 
         public DbSet<CacheControl> CacheControls { get; set; }
+
+        // This maps to the table that stores keys.
+        public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
@@ -90,6 +94,7 @@ namespace MyApp.Admin.Security.Public.Data
             });
 
             modelBuilder.Entity<CacheControl>().ToTable(schema: DbSchemaName, name: "CacheControl");
+            modelBuilder.Entity<DataProtectionKey>().ToTable(schema: DbSchemaName, name: "DataProtectionKey");
         }
     }
 }
